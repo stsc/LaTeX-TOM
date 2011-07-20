@@ -2,7 +2,7 @@
 #
 # LaTeX::TOM (TeX Object Model)
 #
-# Version 1.00
+# Version 1.00_01
 #
 # ----------------------------------------------------------------------------
 #
@@ -31,8 +31,9 @@ package LaTeX::TOM;
 
 use strict;
 use base qw(LaTeX::TOM::Parser);
+use constant true => 1;
 
-our $VERSION = '1.00';
+our $VERSION = '1.00_01';
 
 our (%INNERCMDS, %MATHENVS, %MATHBRACKETS,
      %BRACELESS, %TEXTENVS, $PARSE_ERRORS_FATAL);
@@ -43,7 +44,7 @@ our (%INNERCMDS, %MATHENVS, %MATHBRACKETS,
 # environment of that grouping. For instance {\bf text}.  Without listing the 
 # command names here, the parser will treat such sequences as plain text.
 #
-%INNERCMDS = map { $_ => 1 } (
+%INNERCMDS = map { $_ => true } (
  'bf',
  'md',
  'em',
@@ -72,7 +73,7 @@ our (%INNERCMDS, %MATHENVS, %MATHBRACKETS,
 
 # these commands put their environments into math mode
 #
-%MATHENVS = map { $_ => 1 } (
+%MATHENVS = map { $_ => true } (
  'align',
  'equation',
  'eqnarray',
@@ -87,7 +88,7 @@ our (%INNERCMDS, %MATHENVS, %MATHBRACKETS,
 
 # these commands/environments put their children in text (non-math) mode
 #
-%TEXTENVS = map { $_ => 1 } (
+%TEXTENVS = map { $_ => true } (
  'tiny',
  'scriptsize',
  'footnotesize',
@@ -169,7 +170,7 @@ our (%INNERCMDS, %MATHENVS, %MATHBRACKETS,
 # these commands require no braces, and their parameters are simply the 
 # "word" following the command declaration
 #
-%BRACELESS = map { $_ => 1 } (
+%BRACELESS = map { $_ => true } (
  'oddsidemargin',
  'evensidemargin',
  'topmargin',
@@ -763,11 +764,11 @@ Probably plenty.  However, this module has performed fairly well on a set of
 ~1000 research publications from the Computing Research Repository, so I
 deemed it ``good enough'' to use for purposes similar to mine.
 
-Please let the authors know of parser errors if you discover any.
+Please let the maintainer know of parser errors if you discover any.
 
 =head1 CREDITS
 
-Thanks to (in order of appearance) who have contributed valuable suggestions & patches:
+Thanks to (in order of appearance) who have contributed valuable suggestions and patches:
 
  Otakar Smrz
  Moritz Lenz
@@ -780,16 +781,11 @@ Written by Aaron Krowne <akrowne@vt.edu>
 
 Maintained by Steven Schubiger <schubiger@cpan.org>
 
-=head1 WEB SITE
-
-Please see http://br.endernet.org/~akrowne/elaine/latex_tom/ for this
-module's home on the WWW.
-
 =head1 LICENSE
 
 This program is free software; you may redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+See L<http://dev.perl.org/licenses/>
 
 =cut

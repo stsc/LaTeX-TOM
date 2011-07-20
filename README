@@ -44,7 +44,6 @@ DESCRIPTION
 
 COMPONENTS
   LaTeX::TOM::Parser
-
     The parser recognizes 3 parameters upon creation. The parameters, in
     order, are
 
@@ -74,7 +73,6 @@ COMPONENTS
     The parser returns a `LaTeX::TOM::Tree' ($document in the SYNOPSIS).
 
   LaTeX::TOM::Node
-
     Nodes may be of the following types:
 
     TEXT
@@ -135,7 +133,6 @@ COMPONENTS
         some internal point.
 
   LaTeX::TOM::Trees
-
     As mentioned before, the Tree is the return result of a parse.
 
     The tree is nothing more than an arrayref of Nodes, some of which may
@@ -146,7 +143,6 @@ COMPONENTS
 
 METHODS
   LaTeX::TOM
-
     new
         Instantiate a new parser object.
 
@@ -154,7 +150,6 @@ METHODS
     and described.
 
   LaTeX::TOM::Parser
-
     The methods for the parser (aside from the constructor, discussed above)
     are :
 
@@ -166,7 +161,6 @@ METHODS
         Parse the string *string* and return a `LaTeX::TOM::Tree'.
 
   LaTeX::TOM::Tree
-
     This section contains methods for the Trees returned by the parser.
 
     copy
@@ -219,7 +213,6 @@ METHODS
         walk the tree yourself, starting with the first node.
 
   LaTeX::TOM::Node
-
     This section contains the methods for nodes of the parsed Trees.
 
     getNodeType
@@ -332,11 +325,11 @@ BUGS
     of ~1000 research publications from the Computing Research Repository,
     so I deemed it ``good enough'' to use for purposes similar to mine.
 
-    Please let the authors know of parser errors if you discover any.
+    Please let the maintainer know of parser errors if you discover any.
 
 CREDITS
     Thanks to (in order of appearance) who have contributed valuable
-    suggestions & patches:
+    suggestions and patches:
 
      Otakar Smrz
      Moritz Lenz
@@ -348,13 +341,9 @@ AUTHORS
 
     Maintained by Steven Schubiger <schubiger@cpan.org>
 
-WEB SITE
-    Please see http://br.endernet.org/~akrowne/elaine/latex_tom/ for this
-    module's home on the WWW.
-
 LICENSE
     This program is free software; you may redistribute it and/or modify it
     under the same terms as Perl itself.
 
-    See http://www.perl.com/perl/misc/Artistic.html
+    See http://dev.perl.org/licenses/
 

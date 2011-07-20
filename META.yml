@@ -1,6 +1,6 @@
 ---
 name: LaTeX-TOM
-version: 1.00
+version: 1.00_01
 author:
   - 'Steven Schubiger <schubiger@cpan.org>'
 abstract: 'A module for parsing, analyzing, and manipulating LaTeX documents.'
@@ -10,11 +10,11 @@ resources:
 build_requires:
   Test::More: 0
 configure_requires:
-  Module::Build: 0.34
+  Module::Build: 0.340201
 provides:
   LaTeX::TOM:
     file: lib/LaTeX/TOM.pm
-    version: 1.00
+    version: 1.00_01
   LaTeX::TOM::Node:
     file: lib/LaTeX/TOM/Node.pm
     version: 0.01
@@ -24,7 +24,7 @@ provides:
   LaTeX::TOM::Tree:
     file: lib/LaTeX/TOM/Tree.pm
     version: 0.01
-generated_by: Module::Build version 0.34
+generated_by: Module::Build version 0.340201
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: 1.4
