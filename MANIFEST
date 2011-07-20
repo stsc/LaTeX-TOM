@@ -1,0 +1,22 @@
+Build.PL
+Changes
+INSTALL
+lib/LaTeX/TOM.pm
+lib/LaTeX/TOM/Node.pm
+lib/LaTeX/TOM/Parser.pm
+lib/LaTeX/TOM/Tree.pm
+LICENSE
+Makefile.PL
+MANIFEST			This list of files
+META.yml
+README
+t/00-load.t
+t/01-basic.t
+t/02-parser.t
+t/03-tree.t
+t/04-node.t
+t/data/input.tex
+t/data/tex.in
+t/pod-coverage.t
+t/pod.t
+TODO

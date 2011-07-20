@@ -1,0 +1,147 @@
+Revision history for Perl extension LaTeX::TOM.
+
+1.00 Wed Oct  7 10:56:12 CEST 2009
+
+ - Merged development version to stable.
+
+0.9_03 Sun Aug 23 16:59:26 CEST 2009
+
+ - Initialize user options by calling a lexical subroutine.
+
+ - Replace calls to not existant copyTree/splitTextNode subs
+   with calls to the copy/split methods.
+
+ - Populate the config data hashes with true values at runtime.
+
+ - Remove the superfluous use of 'defined' when checking booleans.
+
+ - Declare globals with 'our' instead of 'use vars'.
+
+ - Assign the config data at once within the parser object.
+
+ - Set initial version numbers for the Node, Parser and Tree class.
+
+0.9_02 Sun Aug 16 12:31:18 CEST 2009
+
+ - Fix \input lines parsing failure with "read inputs flag" set.
+   [rt #48538 - Jesse S. Bangs]
+
+0.9_01 Wed Aug 12 14:25:08 CEST 2009
+
+ - Use code reference instead of string eval in getNodesByCondition().
+   [rt #48551 - Jesse S. Bangs]
+
+ - Fix some warnings which were suppressed within the tests.
+
+0.9 Tue Apr 29 12:21:00 CEST 2008
+
+ - Added support for dealing with starred commands.
+   [James Bowlin <bowlin@mindspring.com>]
+
+ - Merged development version to stable.
+
+0.8_02 Thu Feb 21 21:08:50 CET 2008
+
+ - Added further test-files to suite (i.e., ones that test the
+   parser, tree and node functionality).
+
+ - Fixed a slight documentation error (the method getTopLevelNodes()
+   returns a list, and *not* an array reference).
+
+0.8_01 Tue Feb 19 15:29:40 CET 2008
+
+ - Added basic test-file basic.t.
+
+ - Added CREDITS and LICENSE sections to the documentation.
+
+0.8 Mon Oct  8 10:23:01 CEST 2007
+
+ - Fixed failing tests pod.t & pod-coverage.t (adjusted plans).
+
+0.7 Tue Aug 28 00:12:03 CEST 2007
+
+ - Added formatting tags to the documentation where appropriate
+   and enlisted all methods within the documentation index.
+
+0.6 Wed Mar 14 01:05:09 CET 2007
+
+ - Merged development version to stable.
+
+0.5_05 Sun Feb 18 11:30:51 CET 2007
+
+ - Fixing reference types in all ...->{children}->{nodes}->[...]
+   occurrences in the LaTeX::TOM::Parser::_applyMapping and
+   LaTeX::TOM::Node::getLastChild subroutines.
+   [Otakar Smrz, otakar.smrz@mff.cuni.cz]
+
+0.5_04 Fri Feb 16 10:41:21 CET 2007
+
+ - Fixed approximately half a dozen broken hash keys in references
+   with {node} instead of {nodes} as subkey.
+
+0.5_03 Fri Feb 16 02:00:52 CET 2007
+
+ - Fixed wrong spelling of $self->{node} to $self->{nodes} within
+   LaTeX::TOM::Parser.
+
+0.5_02 Mon Feb 12 03:37:11 CET 2007
+
+ - Added suitable (albeit slightly modified) pod.t & pod-coverage.t
+   to the test directory.
+
+ - Documented LaTeX::TOM's constructor new().
+
+0.5_01 Mon Feb  5 08:47:05 CET 2007
+
+ - Resolved accidentally swapped $prev/$next pointers in assignment
+   in LaTeX::TOM::Node's listify(), resulting in misbehaviour of
+   getNextGroupNode(), getPreviousSibling() and the like.
+
+ - Added fully qualified package declaration to LaTeX::TOM::Parser,
+   LaTeX::TOM::Node & LaTeX::TOM::Tree. Removed class specification
+   from sub declarations likewise.
+
+ - LaTeX::TOM's constructor, new() reblesses a LaTeX::TOM::Parser
+   object with the references to the global variables defined within
+   LaTeX::TOM. @_ is passed unaltered to LaTeX::TOM::Parser's new().
+
+ - LaTeX::TOM establishes an ISA relationship with LaTeX::TOM::Parser
+   and LaTeX::TOM::Parser with LaTeX::TOM::Node/LaTeX::TOM::Tree.
+
+ - LaTeX::TOM::Tree's constructor, new() now returns a blessed hash
+   reference instead of previously a blessed array reference, because
+   we're basically reblessing the $parser object.
+
+ - Extracted the TODO part from LaTeX::TOM and put it in a separate
+   file named TODO in the root of the distribution.
+
+0.5 Son Dec 31 01:47:36 CET 2006
+
+ - Percents (%) and braces ({}) within verbatim blocks
+   are now taken care of while parsing.
+
+ - Replaced all occurences of tabs within the code with
+   literal whitespace.
+
+0.3 Sun Dec 24 11:37:21 CET 2006 
+
+ - Initial CPAN version.
+
+02c ???
+
+ - Bug fixes: Handling of newlines and whitespace between commands 
+   and parameters and groups, handling of \w+\d+ commands (thanks 
+   Leo Tenenblat for both of these), documentation bugfix: "parseFile",
+   not "parsefile".
+
+02b ???
+
+ - License included (BSD), some minor code indenting cleanups.
+
+02 ???
+
+ - This is the first release version.
+
+01 ???
+
+ - Non-OOP version of the current functionality. Not released.
