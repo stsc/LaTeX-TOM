@@ -10,6 +10,7 @@ my $build = Module::Build->new
    module_name => 'LaTeX::TOM',
    dist_author => 'Steven Schubiger <schubiger@cpan.org>',
    dist_version_from => 'lib/LaTeX/TOM.pm',
+   requires => { 'Carp' => 0 },
    build_requires => { 'Test::More' => 0 },
    license => 'perl',
    create_readme => 1,

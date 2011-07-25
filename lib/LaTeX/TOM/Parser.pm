@@ -13,8 +13,12 @@ use base qw(
     LaTeX::TOM::Node
     LaTeX::TOM::Tree
 );
+use constant true  => 1;
+use constant false => 0;
 
-our $VERSION = '0.01';
+use Carp qw(carp croak);
+
+our $VERSION = '0.02';
 
 # Constructor
 #
@@ -75,17 +79,13 @@ sub parseFile {
     $parser->{file} = $filename;        # file name member data
     my $tree = {};                      # init output tree
 
-    # read in text from file
+    # read in text from file or bomb out
     #
-    my $text = _readFile($filename);
+    my $text = _readFile($filename, true);
 
-    # do the parse or bomb out
+    # do the parse
     #
-    if ($text) {
-        $tree = $parser->parse($text);
-    } else {
-        die "Could not read file $filename !";
-    }
+    $tree = $parser->parse($text);
 
     return $tree;
 }
@@ -1170,23 +1170,28 @@ sub _addInputs {
             #print "reading input file $file\n";
 
             # read in contents of file
-            my $contents = _readFile($file);
-            if ($contents eq '' && not $file =~ /\.tex$/) {
+            my $contents;
+            if (-e $file) {
+                $contents = _readFile($file);
+            }
+            elsif ($file !~ /\.tex$/) {
                 $file = "$file.tex";
-                $contents = _readFile($file); 
+                $contents = _readFile($file);
             }
 
             # dump Psfig/TeX files, they aren't useful to us and have
             # nonconforming syntax. Use declaration line as our heuristic.
             #
-            if ($contents =~ /^\%\s*Psfig\/TeX\s*$/m) {
-                $contents = '';
-                warn "ignoring Psfig input '$file'";
+            if (defined $contents
+                     && $contents =~ m!^ \% \s*? Psfig/TeX \s* $!mx
+            ) {
+                undef $contents;
+                carp "ignoring Psfig input `$file'";
             }
 
             # actually do the parse of the sub-content
             #
-            if ($contents) {
+            if (defined $contents) {
                 # parse into a tree
                 my ($subtree,) = $parser->_basicparse($contents, $parser->{PARSE_ERRORS_FATAL});
 
@@ -1208,7 +1213,7 @@ sub _addInputs {
 
                      my $contents = _readFile($file);
 
-                     if ($contents) {
+                     if (defined $contents) {
 
                          my ($subtree,) = $parser->_basicparse($contents, $parser->{PARSE_ERRORS_FATAL});
                          splice @{$tree->{nodes}}, $i, 1, @$subtree;
@@ -1724,17 +1729,19 @@ sub _getTextAndCommentNodes {
 # Read in the contents of a text file on disk. Return in string scalar.
 #
 sub _readFile {
-    my $file = shift || '/dev/stdin';
+    my ($file, $raise_error) = @_;
 
-    my $contents = "";
+    $raise_error ||= false;
 
-    open INFILE, $file or return "";
+    my $opened = open(my $fh, '<', $file);
 
-    while (my $line = <INFILE>) {
-        $contents .= $line;
+    unless ($opened) {
+        croak "Cannot open $file: $!" if $raise_error;
+        return undef;
     }
 
-    close INFILE;
+    my $contents = do { local $/; <$fh> };
+    close($fh);
 
     return $contents;
 }

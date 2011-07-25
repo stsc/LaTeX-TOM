@@ -15,8 +15,15 @@ t/01-basic.t
 t/02-parser.t
 t/03-tree.t
 t/04-node.t
+t/data/input.t/00-image_skip.pstex_t
+t/data/input.t/01-basic.in
+t/data/input.t/01-basic.tex
+t/data/input.t/02-guess.in
+t/data/input.t/02-guess.tex
+t/data/input.t/03-psfig_ignore.tex
 t/data/input.tex
 t/data/tex.in
+t/input.t
 t/pod-coverage.t
 t/pod.t
 TODO

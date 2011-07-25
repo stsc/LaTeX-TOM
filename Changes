@@ -1,5 +1,15 @@
 Revision history for Perl extension LaTeX::TOM.
 
+1.00_02  2011-07-24  <schubiger@cpan.org>
+
+ - Improve the \input handling code and add tests.
+
+ - Raise error in _readFile() when a file cannot be opened.
+
+ - Use lexical filehandle and slurp file in _readFile().
+
+ - Substitute warn with carp in _addInputs().
+
 1.00_01  2011-07-20  <schubiger@cpan.org>
 
  - Use true as boolean value when initializing config data.
