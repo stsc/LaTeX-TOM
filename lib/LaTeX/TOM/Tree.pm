@@ -12,7 +12,7 @@ use strict;
 
 use Carp qw(croak);
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 # "constructor"
 #
@@ -28,7 +28,7 @@ sub new {
        nodes  => $nodes,
     };
 
-    return bless $self, ref($class) || $class;
+    return bless $self;
 }
 
 # make a copy of a tree, recursively

@@ -11,7 +11,7 @@ package LaTeX::TOM::Node;
 
 use strict;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 # Make a new Node: turn input hash into object.
 #
@@ -19,7 +19,7 @@ sub new {
     my $class = shift;
     my $node  = shift || {};
 
-    return bless $node, ref($class) || $class;
+    return bless $node;
 }
 
 # "copy constructor"

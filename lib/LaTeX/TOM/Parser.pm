@@ -1161,17 +1161,17 @@ sub _addInputs {
 
         my $node = $tree->{nodes}[$i];
 
-        if ($node->{type} eq 'COMMAND' &&
-            $node->{command} eq 'input') {
-
+        if ($node->{type}    eq 'COMMAND'
+         && $node->{command} eq 'input'
+        ) {
             my $file = $node->{children}->{nodes}[0]->{content};
-            next if ($file =~ /pstex/);	# ignore pstex images
+            next if $file =~ /pstex/; # ignore pstex images
 
             #print "reading input file $file\n";
 
             # read in contents of file
             my $contents;
-            if (-e $file) {
+            if (-e $file && $file =~ /\.\S+$/) {
                 $contents = _readFile($file);
             }
             elsif ($file !~ /\.tex$/) {
@@ -1202,23 +1202,20 @@ sub _addInputs {
                 $i--;
             }
         }
-        elsif ($node->{type} eq 'COMMAND' &&
-             $node->{command} eq 'bibliography') {
-
+        elsif ($node->{type}    eq 'COMMAND'
+            && $node->{command} eq 'bibliography'
+        ) {
              # try to find a .bbl file
              #
-             my @FILES = <*>;
-             foreach my $file (@FILES) {
-                 if ($file =~ /\.bbl$/) {
+             foreach my $file (<*.bbl>) {
 
-                     my $contents = _readFile($file);
+                 my $contents = _readFile($file);
 
-                     if (defined $contents) {
+                 if (defined $contents) {
 
-                         my ($subtree,) = $parser->_basicparse($contents, $parser->{PARSE_ERRORS_FATAL});
-                         splice @{$tree->{nodes}}, $i, 1, @$subtree;
-                         $i--;
-                     }
+                     my ($subtree,) = $parser->_basicparse($contents, $parser->{PARSE_ERRORS_FATAL});
+                     splice @{$tree->{nodes}}, $i, 1, @{$subtree->{nodes}};
+                     $i--;
                  }
              }
         }

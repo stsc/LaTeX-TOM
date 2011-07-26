@@ -8,7 +8,7 @@ use constant false => 0;
 use File::Spec;
 use FindBin qw($Bin);
 use LaTeX::TOM;
-use Test::More tests => 5;
+use Test::More tests => 6;
 
 my $set_input = sub { ${$_[0]} =~ s/\$INPUT/\\input{$_[1]}/ };
 
@@ -24,7 +24,8 @@ my @tests = (
     [ '00-image_skip.pstex_t',  undef,        'skip pstex'  , true  ],
     [ '01-basic.tex',          '01-basic.in', 'basic'       , true  ],
     [ '02-guess',              '02-guess.in', 'guess'       , false ], # file extension for '02-guess' missing on purpose
-    [ '03-psfig_ignore.tex',    undef,        'ignore Psfig', true  ],
+    [ '03-empty.tex',          '03-empty.in', 'empty',        true  ],
+    [ '04-psfig_ignore.tex',    undef,        'ignore Psfig', true  ],
 );
 
 SKIP:
@@ -64,7 +65,7 @@ sub check_unaltered_tex
 }
 
 {
-    foreach my $test (@tests[1,2]) {
+    foreach my $test (@tests[1..3]) {
         my ($input_file, $tex_file, $message) = @$test;
 
         $input_file = File::Spec->catfile($rel_path, $input_file);
@@ -92,8 +93,8 @@ sub check_unaltered_tex
         $seen_warning = true;
     };
 
-    my $ignored = check_unaltered_tex($tests[3]);
-    my $message = $tests[3]->[2];
+    my $ignored = check_unaltered_tex($tests[4]);
+    my $message = $tests[4]->[2];
 
     ok($ignored && $seen_warning, $message);
 }

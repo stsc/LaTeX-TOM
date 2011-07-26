@@ -1,5 +1,19 @@
 Revision history for Perl extension LaTeX::TOM.
 
+1.00_03  2011-07-26  <schubiger@cpan.org>
+
+ - Fix an error when dereferencing the nodes of a subtree.
+
+ - Improve the \bibliography handling code and add a test.
+
+ - Make reading a \input file more strict.
+
+ - Test that empty \input files are not skipped.
+
+ - Bless into current package for the Node/Tree constructors.
+
+ - Adjust some code indentation.
+
 1.00_02  2011-07-24  <schubiger@cpan.org>
 
  - Improve the \input handling code and add tests.
