@@ -9,6 +9,7 @@ WriteMakefile
           'VERSION_FROM' => 'lib/LaTeX/TOM.pm',
           'PREREQ_PM' => {
                            'Test::More' => 0,
+                           'File::Basename' => 0,
                            'Carp' => 0
                          }
         )

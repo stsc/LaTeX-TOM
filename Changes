@@ -1,5 +1,11 @@
 Revision history for Perl extension LaTeX::TOM.
 
+1.00_04  2011-07-27  <schubiger@cpan.org>
+
+ - Strengthen the check for a \input file filename extension.
+
+ - Add File::Basename as dependency.
+
 1.00_03  2011-07-26  <schubiger@cpan.org>
 
  - Fix an error when dereferencing the nodes of a subtree.

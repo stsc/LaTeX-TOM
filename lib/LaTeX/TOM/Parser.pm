@@ -17,8 +17,9 @@ use constant true  => 1;
 use constant false => 0;
 
 use Carp qw(carp croak);
+use File::Basename qw(fileparse);
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 # Constructor
 #
@@ -1169,14 +1170,17 @@ sub _addInputs {
 
             #print "reading input file $file\n";
 
-            # read in contents of file
             my $contents;
-            if (-e $file && $file =~ /\.\S+$/) {
+            my $filename = fileparse($file);
+            my $has_extension = qr/\.\S+$/;
+
+            # read in contents of file
+            if (-e $file && $filename =~ $has_extension) {
                 $contents = _readFile($file);
             }
-            elsif ($file !~ /\.tex$/) {
+            elsif ($filename !~ $has_extension) {
                 $file = "$file.tex";
-                $contents = _readFile($file);
+                $contents = _readFile($file) if -e $file;
             }
 
             # dump Psfig/TeX files, they aren't useful to us and have
