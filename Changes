@@ -1,5 +1,21 @@
 Revision history for Perl extension LaTeX::TOM.
 
+1.00_05  2011-07-29  <schubiger@cpan.org>
+
+ - Refactor _getTextAndCommentNodes(), which includes:
+
+ - Move creating a comment or text node to a lexical subroutine.
+
+ - Store the type as string and adjust comments accordingly.
+
+ - Append line to string directly instead of pushing to an array.
+
+ - (Re)set initialization variables with short-circuit operators.
+
+ - Use underscores within variable names where appropriate.
+
+ - Reformat visually the regular expressions used.
+
 1.00_04  2011-07-27  <schubiger@cpan.org>
 
  - Strengthen the check for a \input file filename extension.

@@ -19,7 +19,7 @@ use constant false => 0;
 use Carp qw(carp croak);
 use File::Basename qw(fileparse);
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 # Constructor
 #
@@ -1653,76 +1653,71 @@ sub _applyParamsToTemplate_r {
 # '%' prefixed LaTeX comment lines
 #
 sub _getTextAndCommentNodes {
-    my $text = shift;
-    my $begins = shift;
-    my $ends = shift;
+    my ($text, $begins, $ends) = @_;
 
-    my $nodetext = substr $text, $begins, $ends - $begins;
+    my $node_text = substr $text, $begins, $ends - $begins;
 
-    #warn "getTextAndCommentNodes: looking at [$nodetext]";
+    #warn "getTextAndCommentNodes: looking at [$node_text]";
 
-    my @lines = split (/((?: *(?<!\\)\%[^\n]*\n)+)/m, $nodetext);
+    my $make_node = sub {
+        my ($mode_type, $begins, $start_pos, $output) = @_;
 
-    my @nodes = ();
+        return LaTeX::TOM::Node->new({
+            type    => uc $mode_type,
+            start   => $begins + $start_pos,
+            end     => $begins + $start_pos + length($output) - 1,
+            content => $output,
+        });
+    };
 
-    my $startpos = 0;
-    my @out = ();
-    my $comment = 0; # comment mode
-    my $first = 1;
+    my @lines = split (/(
+       (?:\s*     # whitespace
+         (?<!\\)  # unescaped
+         \%[^\n]* # comment
+       \n)+       # newline
+    )/mx, $node_text);
+
+    my @nodes;
+
+    my $start_pos = 0;
+    my $output;
+    my $mode_type;
+    my $first = true;
 
     foreach my $line (@lines) {
 
-        my $mode;
+         my $line_type = (
+                 $line =~ /^\s*\%/
+         && $node_text !~ /
+                           \\begin\{verbatim\}
+                             .* \Q$line\E .*
+                           \\end\{verbatim\}
+                          /sx
+        ) ? 'comment' : 'text';
 
-        # set current mode based on whether this is a comment
-        if ($line =~ /^\s*\%/ && $nodetext !~ /\\begin\{verbatim\}.*\Q$line\E.*\\end\{verbatim\}/s) {
-            $mode = 1;  # comment
-        } else {
-            $mode = 0;  # not-comment (regular text)
-        }
+        # if type stays the same, add to output and do nothing
+        if ($first || $line_type eq $mode_type) {
 
-        # if mode stays the same, add to output and do nothing
-        if ($mode == $comment || $first) { 
-
-            push @out, $line;
+            $output .= $line;
 
             # handle turning off initialization stuff
-            if ($first) {
-                $first = 0;
-                $comment = $mode;
-            }
+            $first &&= false;
+            $mode_type ||= $line_type;
         }
 
-        # if mode changes, make new node from current chunk, change mode
-        # flag, and start a new chunk
+        # if type changes, make new node from current chunk, change mode type
+        # and start a new chunk
         else {
-        my $output = join ('', @out);
+            push @nodes, $make_node->($mode_type, $begins, $start_pos, $output);
 
-            my $newnode = LaTeX::TOM::Node->new( 
-                {type => $comment ? 'COMMENT' : 'TEXT',
-                 start => $begins + $startpos,
-                 end => $begins + $startpos + length($output) - 1,
-                 content => $output});
+            $start_pos += length($output); # update start position
+            $output = $line;
 
-            push @nodes, $newnode;
-
-            $startpos += length($output); # update start position 
-            @out = ($line);
-
-            $comment = $mode;
+            $mode_type = $line_type;
         }
     }
 
-    # make node from last chunk 
-    my $output = join('', @out);
-
-    my $newnode = LaTeX::TOM::Node->new(
-        {type => $comment ? 'COMMENT' : 'TEXT',
-         start => $begins + $startpos,
-         end => $begins + $startpos + length($output) - 1,
-         content => $output});
-
-    push @nodes, $newnode;
+    push @nodes, $make_node->($mode_type, $begins, $start_pos, $output) if defined $output;
 
     return @nodes;
 }

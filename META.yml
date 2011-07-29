@@ -1,6 +1,6 @@
 ---
 name: LaTeX-TOM
-version: 1.00_04
+version: 1.00_05
 author:
   - 'Steven Schubiger <schubiger@cpan.org>'
 abstract: 'A module for parsing, analyzing, and manipulating LaTeX documents.'
@@ -17,13 +17,13 @@ configure_requires:
 provides:
   LaTeX::TOM:
     file: lib/LaTeX/TOM.pm
-    version: 1.00_04
+    version: 1.00_05
   LaTeX::TOM::Node:
     file: lib/LaTeX/TOM/Node.pm
     version: 0.02
   LaTeX::TOM::Parser:
     file: lib/LaTeX/TOM/Parser.pm
-    version: 0.03
+    version: 0.04
   LaTeX::TOM::Tree:
     file: lib/LaTeX/TOM/Tree.pm
     version: 0.02
