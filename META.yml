@@ -1,33 +1,34 @@
 ---
-name: LaTeX-TOM
-version: 1.00_05
+abstract: 'A module for parsing, analyzing, and manipulating LaTeX documents.'
 author:
   - 'Steven Schubiger <schubiger@cpan.org>'
-abstract: 'A module for parsing, analyzing, and manipulating LaTeX documents.'
-license: perl
-resources:
-  license: http://dev.perl.org/licenses/
 build_requires:
   Test::More: 0
-requires:
-  Carp: 0
-  File::Basename: 0
 configure_requires:
-  Module::Build: 0.340201
+  Module::Build: 0.38
+dynamic_config: 1
+generated_by: 'Module::Build version 0.38, CPAN::Meta::Converter version 2.110930'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: LaTeX-TOM
 provides:
   LaTeX::TOM:
     file: lib/LaTeX/TOM.pm
-    version: 1.00_05
+    version: 1.00_06
   LaTeX::TOM::Node:
     file: lib/LaTeX/TOM/Node.pm
     version: 0.02
   LaTeX::TOM::Parser:
     file: lib/LaTeX/TOM/Parser.pm
-    version: 0.04
+    version: 0.05
   LaTeX::TOM::Tree:
     file: lib/LaTeX/TOM/Tree.pm
-    version: 0.02
-generated_by: Module::Build version 0.340201
-meta-spec:
-  url: http://module-build.sourceforge.net/META-spec-v1.4.html
-  version: 1.4
+    version: 0.03
+requires:
+  Carp: 0
+  File::Basename: 0
+resources:
+  license: http://dev.perl.org/licenses/
+version: 1.00_06

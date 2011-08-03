@@ -19,16 +19,31 @@ use constant false => 0;
 use Carp qw(carp croak);
 use File::Basename qw(fileparse);
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
+
+my %error_handlers = (
+    0 => sub { warn "parse error: $_[0].\n" },
+    1 => sub { die  "parse error: $_[0].\n" },
+    2 => sub {},
+);
 
 # Constructor
 #
 sub new {
     my $class = shift;
 
-    my $self = {};
+    no strict 'refs';
 
-    bless $self, ref($class) || $class;
+    my $self = bless {
+        config => {
+            BRACELESS          => \%{"${class}::BRACELESS"},
+            INNERCMDS          => \%{"${class}::INNERCMDS"},
+            MATHENVS           => \%{"${class}::MATHENVS"},
+            MATHBRACKETS       => \%{"${class}::MATHBRACKETS"},
+            PARSE_ERRORS_FATAL =>  ${"${class}::PARSE_ERRORS_FATAL"},
+            TEXTENVS           => \%{"${class}::TEXTENVS"},
+        },
+    };
 
     $self->_init(@_);
 
@@ -41,7 +56,7 @@ sub _init {
     my $parser = shift;
     my ($parse_errors_fatal, $readinputs, $applymappings) = @_;
 
-    my $retrieve_opt_with_default = sub
+    my $retrieve_opt_default = sub
     {
         my ($opt, $default) = @_;
         return $opt if defined $opt;
@@ -50,9 +65,9 @@ sub _init {
 
     # set user options
     #
-    $parser->{readinputs}         = $retrieve_opt_with_default->($readinputs, 0);
-    $parser->{applymappings}      = $retrieve_opt_with_default->($applymappings, 0);
-    $parser->{PARSE_ERRORS_FATAL} = $retrieve_opt_with_default->($parse_errors_fatal, $parser->{config}{PARSE_ERRORS_FATAL});
+    $parser->{readinputs}         = $retrieve_opt_default->($readinputs, 0);
+    $parser->{applymappings}      = $retrieve_opt_default->($applymappings, 0);
+    $parser->{PARSE_ERRORS_FATAL} = $retrieve_opt_default->($parse_errors_fatal, $parser->{config}{PARSE_ERRORS_FATAL});
 
     # init internal stuff
     #
@@ -95,36 +110,39 @@ sub parseFile {
 #
 sub parse {
     my $parser = shift;
-
-    my $text = shift;
+    my ($text) = @_;
 
     # first half of parsing (goes up to finding commands, reading inputs)
     #
     my ($tree, $bracehash) = $parser->_parseA($text);
-
-    #print "done with _parseA\n";
-    #$tree->print();
+    _debug(
+        'done with _parseA',
+         sub { $tree->_warn() },
+    );
 
     # handle mappings
     #
     $parser->_applyMappings($tree) if $parser->{applymappings};
-
-    #print "done with _applyMappings\n";
-    #$tree->print();
+    _debug(
+        'done with _applyMappings',
+         sub { $tree->_warn() },
+    );
 
     # second half of parsing (environments)
     #
     $parser->_parseB($tree);
-
-    #print "done with _parseB\n";
-    #$tree->print();
+    _debug(
+        'done with _parseB',
+         sub { $tree->_warn() },
+    );
 
     # once all the above is done we can propegate math/plaintext modes down
     #
     $parser->_propegateModes($tree, 0, 0);   # math = 0, plaintext = 0
-
-    #print "done with _propegateModes\n";
-    #$tree->print();
+    _debug(
+        'done with _propegateModes',
+         sub { $tree->_warn() },
+    );
 
     # handle kooky \[ \] math mode
     #
@@ -135,8 +153,10 @@ sub parse {
         $parser->{MATHBRACKETS}->{'\\['} = '\\]';  # put back in brackets list for
         $parser->{MATHBRACKETS}->{'\\('} = '\\)';  # printing purposes.
     }
-
-    #$tree->print();
+    _debug(
+        undef,
+        sub { $tree->_warn() },
+    );
 
     $tree->listify;     # add linked-list stuff
 
@@ -310,13 +330,8 @@ sub _stage2 {
                 # check for '}'-based error
                 #
                 if ($leftcount < 0) {
-                    if ($parser->{PARSE_ERRORS_FATAL} == 1) {
-                        die "parse error: '}' before '{' at ".($spos+$rightpos).".";
-                    } elsif ($parser->{PARSE_ERRORS_FATAL} == 0) {
-                        warn "parse error: '}' before '{' at ".($spos+$rightpos).".";
-                    }
-                    # reset and continue
-                    $leftcount = 0;
+                    $error_handlers{$parser->{PARSE_ERRORS_FATAL}}->("'}' before '{' at " . ($spos + $rightpos));
+                    $leftcount = 0; # reset and continue
                 }
             } # right brace
 
@@ -331,12 +346,9 @@ sub _stage2 {
     # check for extra '{' parse error
     #
     if ($leftcount > 0) {
-        my $spos = $tree->{nodes}[$leftidx]->{start};	# get text start position 
-        if ($parser->{PARSE_ERRORS_FATAL} == 1) {
-            die "parse error: unmatched '{' at ".($spos+$leftpos).".";
-        } elsif ($parser->{PARSE_ERRORS_FATAL} == 0) {
-            warn "parse error: unmatched '{' at ".($spos+$leftpos).".";
-        }
+        my $spos = $tree->{nodes}[$leftidx]->{start}; # get text start position
+        $error_handlers{$parser->{PARSE_ERRORS_FATAL}}->("unmatched '{' at " . ($spos + $leftpos));
+
         # try to continue on, after the offending brace
         $parser->_stage2($tree, $bracehash, $leftidx, $leftpos + 1);
     }
@@ -602,11 +614,9 @@ sub _stage4 {
 
     # parse error if we're missing an "\end" tag.
     if ($bcount > 0) {
-        if ($parser->{PARSE_ERRORS_FATAL} == 1) {
-            die "parse error: missing \\end{$class} for \\begin{$class} at position ".$tree->{nodes}[$bidx]->{end}." !";
-        } elsif ($parser->{PARSE_ERRORS_FATAL} == 0) {
-            warn "parse error: missing \\end{$class} for \\begin{$class} at position ".$tree->{nodes}[$bidx]->{end}." !";
-        }
+        $error_handlers{$parser->{PARSE_ERRORS_FATAL}}->(
+            "missing \\end{$class} for \\begin{$class} at position $tree->{nodes}[$bidx]->{end}"
+        );
     }
 }
 
@@ -751,12 +761,8 @@ sub _stage5_r {
                     my $rightpos = _findsymbol($node->{content}, $right, $pos);
 
                     if ($rightpos != -1) {
-                        my $startpos = $node->{start}; # get text start position 
-                        if ($parser->{PARSE_ERRORS_FATAL} == 1) {
-                            die "parse error: unmatched '$right' at ".($startpos+$rightpos).".";
-                        } elsif ($parser->{PARSE_ERRORS_FATAL} == 0) {
-                            warn "parse error: unmatched '$right' at ".($startpos+$rightpos).".";
-                        }
+                        my $startpos = $node->{start}; # get text start position
+                        $error_handlers{$parser->{PARSE_ERRORS_FATAL}}->("unmatched '$right' at " . ($startpos + $rightpos));
                     }
                 }
             } # if TEXT
@@ -780,11 +786,7 @@ sub _stage5_r {
 
         if ($leftpos != -1) {
             my $startpos = $tree->{nodes}[$leftidx]->{start};   # get text start position
-            if ($parser->{PARSE_ERRORS_FATAL} == 1) {
-                die "parse error: unmatched '$left' at ".($startpos+$leftpos).".";
-            } elsif ($parser->{PARSE_ERRORS_FATAL} == 0) {
-                warn "parse error: unmatched '$left' at ".($startpos+$leftpos).".";
-            }
+            $error_handlers{$parser->{PARSE_ERRORS_FATAL}}->("unmatched '$left' at " . ($startpos + $leftpos));
         }
 }
 
@@ -1740,6 +1742,17 @@ sub _readFile {
     close($fh);
 
     return $contents;
+}
+
+sub _debug {
+    my ($message, $code) = @_;
+
+    my $DEBUG = $LaTeX::TOM::DEBUG;
+
+    return unless $DEBUG >= 1 && $DEBUG <= 2;
+
+    warn "$message\n" if $DEBUG >= 1 && defined $message;
+    $code->()         if $DEBUG == 2 && defined $code;
 }
 
 1;

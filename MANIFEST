@@ -8,6 +8,7 @@ lib/LaTeX/TOM/Tree.pm
 LICENSE
 Makefile.PL
 MANIFEST			This list of files
+META.json
 META.yml
 README
 t/00-load.t

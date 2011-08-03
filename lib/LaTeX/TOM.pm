@@ -2,7 +2,7 @@
 #
 # LaTeX::TOM (TeX Object Model)
 #
-# Version 1.00_05
+# Version 1.00_06
 #
 # ----------------------------------------------------------------------------
 #
@@ -33,10 +33,11 @@ use strict;
 use base qw(LaTeX::TOM::Parser);
 use constant true => 1;
 
-our $VERSION = '1.00_05';
+our $VERSION = '1.00_06';
 
 our (%INNERCMDS, %MATHENVS, %MATHBRACKETS,
-     %BRACELESS, %TEXTENVS, $PARSE_ERRORS_FATAL);
+     %BRACELESS, %TEXTENVS, $PARSE_ERRORS_FATAL,
+     $DEBUG);
 
 # BEGIN CONFIG SECTION ########################################################
 
@@ -187,22 +188,18 @@ our (%INNERCMDS, %MATHENVS, %MATHBRACKETS,
 #
 $PARSE_ERRORS_FATAL = 0;
 
+# debugging mode (internal use)
+#
+#  0 = off, 1 = messages, 2 = messages and code
+#
+$DEBUG = 0;
+
 # END CONFIG SECTION ##########################################################
 
 sub new {
-    my $self = shift;
-    my $obj  = LaTeX::TOM::Parser->new(@_);
+    my $class = shift;
 
-    $obj->{config} = {
-        BRACELESS          => \%BRACELESS,
-        INNERCMDS          => \%INNERCMDS,
-        MATHENVS           => \%MATHENVS,
-        MATHBRACKETS       => \%MATHBRACKETS,
-        PARSE_ERRORS_FATAL => $PARSE_ERRORS_FATAL,
-        TEXTENVS           => \%TEXTENVS,
-    };
-
-    return $obj;
+    return __PACKAGE__->SUPER::new(@_);
 }
 
 1;

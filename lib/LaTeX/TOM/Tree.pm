@@ -12,7 +12,7 @@ use strict;
 
 use Carp qw(croak);
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 # "constructor"
 #
@@ -59,56 +59,68 @@ sub copy {
     return bless [@output];
 }
 
+sub print {
+    shift->_debug_tree(@_, sub { print STDOUT $_[0] });
+}
+sub _warn {
+    shift->_debug_tree(@_, sub { print STDERR $_[0] });
+}
+
 # Print out the LaTeX "TOM" tree. Good for debugging our parser.
 #
-sub print {
+sub _debug_tree {
     my $tree = shift;
-    my $level = shift || 0;
+    my $output_handler = pop;
+    my ($level) = @_;
+
+    $level ||= 0;
 
     foreach my $node (@{$tree->{nodes}}) {
-        my $spacer = ' ' x ($level*2);
+        my $spacer = ' ' x ($level * 2);
 
-        print $spacer;
+        $output_handler->($spacer);
 
         # print grouping/command info
         if ($node->{type} eq 'COMMAND') {
-            if ($node->{opts}) {
-                print "(COMMAND) \\$node->{command} [$node->{opts}] @ [$node->{start}, $node->{end}]";
-            } else {
-                print "(COMMAND) \\$node->{command} @ [$node->{start}, $node->{end}]";
-            }
+            $output_handler->(sprintf
+                "($node->{type}) \\$node->{command} %s @ [$node->{start}, $node->{end}]",
+                  $node->{opts} ? "[$node->{opts}]" : "\b",
+            );
         }
 
         elsif ($node->{type} eq 'GROUP') {
-            print "(GROUP) [$node->{start}, $node->{end}]";
+            $output_handler->("($node->{type}) [$node->{start}, $node->{end}]");
         }
 
         elsif ($node->{type} eq 'ENVIRONMENT') {
-            print "(ENVIRONMENT) $node->{class} @ inner [$node->{start}, $node->{end}] outer [$node->{ostart}, $node->{oend}]";
+            $output_handler->("($node->{type}) $node->{class} @ inner [$node->{start}, $node->{end}] outer [$node->{ostart}, $node->{oend}]");
         }
 
-        elsif ($node->{type} eq 'TEXT' || $node->{type} eq 'COMMENT') {
-            my $spaceout = "$spacer $node->{type}	|";
-            $spaceout =~ s/[A-Z]/ /go;
-            my $printtext = $node->{content};
-            my $maxlen = 80 - length($spaceout);
-            $printtext =~ s/^(.{0,$maxlen}).*$/$1/gm;
-            $printtext =~ s/\n/\n$spaceout/gs;
-            print "(".$node->{type}.") |$printtext\"";
+        elsif ($node->{type} =~ /^(?:TEXT|COMMENT)$/) {
+            my $space_out = do {
+                local $_ = "$spacer $node->{type}	|";
+                s/[A-Z]/ /go;
+                $_;
+            };
+            my $max_len = 80 - length($space_out);
+            my $print_text = do {
+                local $_ = $node->{content};
+                s/^(.{0,$max_len}).*$/$1/gm;
+                s/\n/\n$space_out/gs;
+                $_;
+            };
+            $output_handler->("($node->{type}) |$print_text\"");
         }
 
-        if ($node->{math}) {
-            print " ** math mode **";
-        }
-        if ($node->{plaintext}) {
-            print " ** plaintext **";
-        }
+        $output_handler->(' ** math mode **') if $node->{math};
+        $output_handler->(' ** plaintext **') if $node->{plaintext};
 
-        print "\n";
+        $output_handler->("\n");
 
         # recur
         if (defined $node->{children}) {
-            $node->{children}->print($level+1);
+            my ($wrapper) = (caller(1))[3] =~ /.+::(.+)$/;
+            $node->{children}->$wrapper($level + 1);
         }
     }
 }

@@ -1,5 +1,21 @@
 Revision history for Perl extension LaTeX::TOM.
 
+1.00_06  2011-08-03  <schubiger@cpan.org>
+
+ - Fix setting instance config data for the main constructor.
+
+ - Introduce error handlers to minimize code repetition.
+
+ - Change commented debug statements in parse() to be invokable.
+
+ - Rename print() to _debug_tree() and wrap it twice in order to
+   emit output to STDOUT/STDERR.
+
+ - Alter _debug_tree() further to use the output handler being
+   passed in and enhance the code layout.
+
+ - Be less verbose for variable names when assigning user options.
+
 1.00_05  2011-07-29  <schubiger@cpan.org>
 
  - Refactor _getTextAndCommentNodes(), which includes:
