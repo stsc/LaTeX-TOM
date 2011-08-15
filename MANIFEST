@@ -28,8 +28,10 @@ t/data/input.t/03-empty.in
 t/data/input.t/03-empty.tex
 t/data/input.t/04-psfig_ignore.tex
 t/data/input.tex
+t/data/mapping.t/mapping.in
 t/data/tex.in
 t/input.t
+t/mapping.t
 t/pod-coverage.t
 t/pod.t
 TODO

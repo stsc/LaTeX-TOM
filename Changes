@@ -1,5 +1,14 @@
 Revision history for Perl extension LaTeX::TOM.
 
+1.00_07  2011-08-15  <schubiger@cpan.org>
+
+ - Fix parsing user-defined mappings and add a test.
+   [rt #48540 - Jesse S. Bangs]
+
+ - Don't pass the parser object to the Tree constructor.
+
+ - Adjust some code indentation.
+
 1.00_06  2011-08-03  <schubiger@cpan.org>
 
  - Fix setting instance config data for the main constructor.

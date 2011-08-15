@@ -19,7 +19,7 @@ use constant false => 0;
 use Carp qw(carp croak);
 use File::Basename qw(fileparse);
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 my %error_handlers = (
     0 => sub { warn "parse error: $_[0].\n" },
@@ -190,7 +190,7 @@ sub _stage1 {
 
     my @nodes = _getTextAndCommentNodes($text, 0, length($text));
 
-    return LaTeX::TOM::Tree->new([@nodes], $parser);
+    return LaTeX::TOM::Tree->new([@nodes]);
 }
 
 # this stage parses the braces ({}) and adds the corresponding structure to
@@ -262,7 +262,7 @@ sub _stage2 {
                             {type => 'GROUP',
                              start => $textnode2->{start} - 1,
                              end => $textnode2->{end} + 1,
-                             children => LaTeX::TOM::Tree->new([$textnode2], $parser),
+                             children => LaTeX::TOM::Tree->new([$textnode2]),
                             });
 
                         # splice the new subtree into the old location
@@ -301,8 +301,7 @@ sub _stage2 {
                              children => LaTeX::TOM::Tree->new(
                                 [$textnode2,
                                  @removed,
-                                 $textnode3],
-                                 $parser),
+                                 $textnode3]),
                             });
 
                         # replace the two original text nodes with the leftover left and
@@ -396,7 +395,7 @@ sub _stage3 {
                          children => $parent->{children} });
 
                     # point parent to it
-                    $parent->{children} = LaTeX::TOM::Tree->new([$newnode], $parser);
+                    $parent->{children} = LaTeX::TOM::Tree->new([$newnode]);
 
                     # start over at this level (get additional inner commands)
                     $parent = $newnode;
@@ -487,7 +486,7 @@ sub _stage3 {
                          command => $command,
                          start => $node->{start} + $a,
                          end => $node->{start} + $b,
-                         children => LaTeX::TOM::Tree->new([$newchild], $parser),
+                         children => LaTeX::TOM::Tree->new([$newchild]),
                         });
 
                     $parser->{USED_COMMANDS}->{$commandnode->{command}} = 1;
@@ -585,7 +584,7 @@ sub _stage4 {
                      end => $end,
                      ostart => $start - length('begin') - length($class) - 2,
                      oend => $end + length('end') + length($class) + 2,
-                     children => LaTeX::TOM::Tree->new([@newarray], $parser),
+                     children => LaTeX::TOM::Tree->new([@newarray]),
                     });
 
                 if ($parser->{config}{MATHENVS}->{$envnode->{class}}) {
@@ -702,7 +701,7 @@ sub _stage5_r {
                                 ostart => $startpos + $leftpos - length($left) + 1,
                                 end => $startpos + $rightpos,
                                 oend => $startpos + $rightpos + length($right) - 1,
-                                children => LaTeX::TOM::Tree->new([$textnode2], $parser),
+                                children => LaTeX::TOM::Tree->new([$textnode2]),
                                 });
 
                             splice @{$tree->{nodes}}, $i, 1, $textnode1, $mathnode, $textnode3;
@@ -741,7 +740,7 @@ sub _stage5_r {
                                 children => LaTeX::TOM::Tree->new(
                                 [$textnode2,
                                  @remnodes,
-                                 $textnode3], $parser),
+                                 $textnode3]),
                                 });
 
                             # replace (TEXT_A, ... , TEXT_B) with the mathnode created above
@@ -890,10 +889,10 @@ sub _applyMapping {
 
         # begin environment nodes
         #
-        if ($node->{type} eq 'COMMAND' &&
-                $node->{command} eq 'begin' &&
-                $node->{children}->{nodes}[0]->{content} eq $mapping->{name}) {
-
+        if ($node->{type}                            eq 'COMMAND'
+         && $node->{command}                         eq 'begin'
+         && $node->{children}->{nodes}[0]->{content} eq $mapping->{name}
+        ) {
             # grab the nparams next group nodes as parameters
             #
             my @params = ();
@@ -920,36 +919,36 @@ sub _applyMapping {
             my $applied = _applyParamsToTemplate($mapping->{btemplate}, @params);
 
             # splice in the result
-            splice @{$tree->{nodes}}, $i, $j, @$applied;
+            splice @{$tree->{nodes}}, $i, $j, @{$applied->{nodes}};
 
             # skip past all the new stuff
-            $i += scalar @$applied - 1;
+            $i += scalar @{$applied->{nodes}} - 1;
         }
 
         # end environment nodes
         #
-        elsif ($node->{type} eq 'COMMAND' &&
-                     $node->{command} eq 'end' &&
-                     $node->{children}->{nodes}[0]->{content} eq $mapping->{name}) {
-
+        elsif ($node->{type}                            eq 'COMMAND'
+            && $node->{command}                         eq 'end'
+            && $node->{children}->{nodes}[0]->{content} eq $mapping->{name}
+        ) {
             # make new subtree (no params)
             my $applied = $mapping->{etemplate}->copy();
 
             # splice in the result
-            splice @{$tree->{nodes}}, $i, 1, @$applied;
+            splice @{$tree->{nodes}}, $i, 1, @{$applied->{nodes}};
 
             # skip past all the new stuff
-            $i += scalar @$applied - 1;
+            $i += scalar @{$applied->{nodes}} - 1;
 
             $applications++; # only count end environment nodes
         }
 
         # newcommand nodes
         #
-        elsif ($node->{type} eq 'COMMAND' &&
-                $node->{command} eq $mapping->{name} &&
-                $mapping->{nparams}) {
-
+        elsif ($node->{type}       eq 'COMMAND'
+            && $node->{command}    eq $mapping->{name}
+            && $mapping->{nparams}
+        ) {
             my @params = ();
 
             # children of COMMAND node will be first parameter
@@ -978,10 +977,10 @@ sub _applyMapping {
             my $applied = _applyParamsToTemplate($mapping->{template}, @params);
 
             # splice in the result
-            splice @{$tree->{nodes}}, $i, $j, @$applied;
+            splice @{$tree->{nodes}}, $i, $j, @{$applied->{nodes}};
 
             # skip past all the new stuff
-            $i += scalar @$applied - 1;
+            $i += scalar @{$applied->{nodes}} - 1;
 
             $applications++;
         }
@@ -1009,10 +1008,10 @@ sub _applyMapping {
                  my $applied = $mapping->{template}->copy();
 
                  # splice the new nodes in
-                 splice @{$tree->{nodes}}, $i, 1, $leftnode, @$applied, $rightnode;
+                 splice @{$tree->{nodes}}, $i, 1, $leftnode, @{$applied->{nodes}}, $rightnode;
 
                  # adjust i so we end up on rightnode when we're done
-                 $i += scalar @$applied + 1;
+                 $i += scalar @{$applied->{nodes}} + 1;
 
                  # get the next node
                  $node = $tree->{$node}[$i];
@@ -1450,7 +1449,7 @@ sub _duplicateParam {
         $nodecopy->{children} = $subtree; # set the child pointer to new subtree
 
         # return a new tree with the new node (subtree) as its only element
-        return LaTeX::TOM::Tree->new([$nodecopy], $parser);
+        return LaTeX::TOM::Tree->new([$nodecopy]);
     }
 
     return undef;
@@ -1603,9 +1602,9 @@ sub _applyParamsToTemplate_r {
     my $template = shift;
     my @params = @_;
 
-    for (my $i = 0; $i < @$template; $i++) {
+    for (my $i = 0; $i < @{$template->{nodes}}; $i++) {
 
-        my $node = $template->[$i];
+        my $node = $template->{nodes}[$i];
 
         if ($node->{type} eq 'TEXT') {
 
@@ -1633,11 +1632,11 @@ sub _applyParamsToTemplate_r {
                 # splice the new text nodes, along with the parameter subtree, into
                 # the old location
                 #
-                splice @$template, $i, 1, $leftnode, @$param, $rightnode;
+                splice @{$template->{nodes}}, $i, 1, $leftnode, @{$param->{nodes}}, $rightnode;
 
                 # skip forward to where $rightnode is in $template on next iteration
                 #
-                $i += scalar @$param;
+                $i += scalar @{$param->{nodes}};
             }
         }
 

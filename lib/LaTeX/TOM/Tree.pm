@@ -12,20 +12,16 @@ use strict;
 
 use Carp qw(croak);
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 # "constructor"
 #
 sub new {
-    my $class  = shift;
-    my $nodes  = shift || []; # empty array for tree structure
-    my $parser = shift;
-
-    my $opts = $parser->{config}{MATHBRACKETS};
+    my $class = shift;
+    my $nodes = shift || []; # empty array for tree structure
 
     my $self = {
-       config => { MATHBRACKETS => $opts },
-       nodes  => $nodes,
+       nodes => $nodes,
     };
 
     return bless $self;
@@ -56,7 +52,7 @@ sub copy {
     }
 
     # each subtree is a tree
-    return bless [@output];
+    return __PACKAGE__->new([@output]);
 }
 
 sub print {
@@ -220,9 +216,10 @@ sub toLaTeX {
 
         elsif ($node->{type} eq 'ENVIRONMENT') {
             # handle special math mode envs
-            if (defined $tree->{config}{MATHBRACKETS}->{$node->{class}}) {
+            my $MATHBRACKETS = \%LaTeX::TOM::MATHBRACKETS;
+            if (defined $MATHBRACKETS->{$node->{class}}) {
                 # print with left and lookup right brace.
-                $str .= $node->{class} . $node->{children}->toLaTeX($node) . $tree->{config}{MATHBRACKETS}->{$node->{class}};
+                $str .= $node->{class} . $node->{children}->toLaTeX($node) . $MATHBRACKETS->{$node->{class}};
             }
 
             # standard \begin/\end envs

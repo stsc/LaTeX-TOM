@@ -34,7 +34,7 @@
    "provides" : {
       "LaTeX::TOM" : {
          "file" : "lib/LaTeX/TOM.pm",
-         "version" : "1.00_06"
+         "version" : "1.00_07"
       },
       "LaTeX::TOM::Node" : {
          "file" : "lib/LaTeX/TOM/Node.pm",
@@ -42,11 +42,11 @@
       },
       "LaTeX::TOM::Parser" : {
          "file" : "lib/LaTeX/TOM/Parser.pm",
-         "version" : "0.05"
+         "version" : "0.06"
       },
       "LaTeX::TOM::Tree" : {
          "file" : "lib/LaTeX/TOM/Tree.pm",
-         "version" : "0.03"
+         "version" : "0.04"
       }
    },
    "release_status" : "testing",
@@ -55,5 +55,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "1.00_06"
+   "version" : "1.00_07"
 }
