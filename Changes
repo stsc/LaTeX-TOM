@@ -1,5 +1,10 @@
 Revision history for Perl extension LaTeX::TOM.
 
+1.00_08  2011-08-18  <schubiger@cpan.org>
+
+ - Test getCommandNodesByName(), getEnvironmentsByName() and
+   getNodesByCondition().
+
 1.00_07  2011-08-15  <schubiger@cpan.org>
 
  - Fix parsing user-defined mappings and add a test.

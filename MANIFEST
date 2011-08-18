@@ -17,6 +17,8 @@ t/02-parser.t
 t/03-tree.t
 t/04-node.t
 t/bibliography.t
+t/by_condition.t
+t/by_name.t
 t/data/bibliography.t/sample.bbl
 t/data/bibliography.t/sample.in
 t/data/input.t/00-image_skip.pstex_t

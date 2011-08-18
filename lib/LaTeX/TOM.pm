@@ -2,7 +2,7 @@
 #
 # LaTeX::TOM (TeX Object Model)
 #
-# Version 1.00_07
+# Version 1.00_08
 #
 # ----------------------------------------------------------------------------
 #
@@ -33,7 +33,7 @@ use strict;
 use base qw(LaTeX::TOM::Parser);
 use constant true => 1;
 
-our $VERSION = '1.00_07';
+our $VERSION = '1.00_08';
 
 our (%INNERCMDS, %MATHENVS, %MATHBRACKETS,
      %BRACELESS, %TEXTENVS, $PARSE_ERRORS_FATAL,
