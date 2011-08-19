@@ -1,5 +1,9 @@
 Revision history for Perl extension LaTeX::TOM.
 
+1.01  2011-08-19  <schubiger@cpan.org>
+
+ - Merged development version to stable.
+
 1.00_08  2011-08-18  <schubiger@cpan.org>
 
  - Test getCommandNodesByName(), getEnvironmentsByName() and
