@@ -10,16 +10,19 @@
 package LaTeX::TOM::Node;
 
 use strict;
+use warnings;
+use constant true  => 1;
+use constant false => 0;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 # Make a new Node: turn input hash into object.
 #
 sub new {
     my $class = shift;
-    my $node  = shift || {};
+    my ($node) = @_;
 
-    return bless $node;
+    return bless $node || {};
 }
 
 # "copy constructor"
@@ -27,9 +30,7 @@ sub new {
 sub copy {
     my $node = shift;
 
-    my $copynode = {%$node}; # copy the memory contents and get a pointer
-
-    return bless $copynode;
+    return bless $node;
 }
 
 # Split a text node into two text nodes, with the first ending before point a,
@@ -44,27 +45,28 @@ sub copy {
 #
 sub split {
     my $node = shift;
-    my $a = shift;
-    my $b = shift;
+    my ($a, $b) = @_;
 
-    return (undef, undef) if ($node->{type} ne 'TEXT');
+    return (undef) x 2 unless $node->{type} eq 'TEXT';
 
-    my $lefttext = substr $node->{content}, 0, $a;
-    my $righttext = substr $node->{content}, $b + 1, length($node->{content}) - $b;
+    my $left_text  = substr $node->{content}, 0, $a;
+    my $right_text = substr $node->{content}, $b + 1, length($node->{content}) - $b;
 
-    my $leftnode = LaTeX::TOM::Node->new(
-        {type => 'TEXT',
-         start => $node->{start},
-         end => $node->{start} + $a -1,
-         content => $lefttext});
+    my $left_node = LaTeX::TOM::Node->new({
+         type    => 'TEXT',
+         start   => $node->{start},
+         end     => $node->{start} + $a - 1,
+         content => $left_text,
+    });
 
-    my $rightnode = LaTeX::TOM::Node->new(
-        {type => 'TEXT',
-         start => $node->{start} + $b + 1,
-         end => $node->{start} + length($node->{content}),
-         content => $righttext});
+    my $right_node = LaTeX::TOM::Node->new({
+         type    => 'TEXT',
+         start   => $node->{start} + $b + 1,
+         end     => $node->{start} + length $node->{content},
+         content => $right_text,
+    });
 
-    return ($leftnode, $rightnode);
+    return ($left_node, $right_node);
 }
 
 #
@@ -85,7 +87,7 @@ sub getNodeText {
 
 sub setNodeText {
     my $node = shift;
-    my $text = shift;
+    my ($text) = @_;
 
     $node->{content} = $text;
 }
@@ -105,13 +107,13 @@ sub getNodeEndingPosition {
 sub getNodeMathFlag {
     my $node = shift;
 
-    return $node->{math} ? 1 : 0;
+    return $node->{math} ? true : false;
 }
 
 sub getNodePlainTextFlag {
     my $node = shift;
 
-    return $node->{plaintext} ? 1 : 0;
+    return $node->{plaintext} ? true : false;
 }
 
 sub getNodeOuterStartingPosition {

@@ -1,5 +1,17 @@
 Revision history for Perl extension LaTeX::TOM.
 
+1.01_01  2011-10-09  <schubiger@cpan.org>
+
+ - Refactor new(), copy() and split() Node methods.
+
+ - Adjust setNodeText().
+
+ - Replace Node's boolean values with true/false.
+
+ - Enable warnings for the Node class.
+
+ - Remove obsoleted LICENSE file.
+
 1.01  2011-08-19  <schubiger@cpan.org>
 
  - Merged development version to stable.
