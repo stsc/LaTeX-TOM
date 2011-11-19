@@ -1,5 +1,9 @@
 Revision history for Perl extension LaTeX::TOM.
 
+1.02  2011-11-13  <schubiger@cpan.org>
+
+ - Merged development version to stable.
+
 1.01_01  2011-10-09  <schubiger@cpan.org>
 
  - Refactor new(), copy() and split() Node methods.
