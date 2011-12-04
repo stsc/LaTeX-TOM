@@ -19,7 +19,7 @@ use constant false => 0;
 use Carp qw(carp croak);
 use File::Basename qw(fileparse);
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 my %error_handlers = (
     0 => sub { warn "parse error: $_[0].\n" },
@@ -224,7 +224,8 @@ sub _stage2 {
 
         if ($node->{type} eq 'TEXT') {
 
-         #warn "parseStage2: looking at text node: [$node->{content}]";
+         _debug("parseStage2: looking at text node: [$node->{content}]", undef);
+
          my ($nextpos, $brace) = _findbrace($node->{content}, $pos);
          while ($nextpos != -1) {
 
@@ -232,7 +233,7 @@ sub _stage2 {
 
             # handle left brace
             if ($brace eq '{') {
-                #warn "found '{' at position $nextpos, leftcount is $leftcount";
+                _debug("found '{' at position $nextpos, leftcount is $leftcount", undef);
                 if ($leftcount == 0) {
                     $leftpos = $nextpos;
                     $leftidx = $i
@@ -243,7 +244,7 @@ sub _stage2 {
             # handle right brance
             elsif ($brace eq '}') {
 
-                #warn "found '}' at position $nextpos , leftcount is $leftcount";
+                _debug("found '}' at position $nextpos, leftcount is $leftcount", undef);
                 my $rightpos = $nextpos;
                 $leftcount--;
 
@@ -430,7 +431,7 @@ sub _stage3 {
 
                 my $tag = $1;
 
-                #print "found text node [$text] with command tag [$tag]\n";
+                _debug("found text node [$text] with command tag [$tag]", undef);
 
                 # remove the text
                 $node->{content} =~ s/\\\w+\*?\s*(?:\[.*?\])?\s*$//os;
@@ -538,20 +539,20 @@ sub _stage4 {
         # see if this is a "\begin" command node
         if ($node->{type} eq 'COMMAND' && $node->{command} eq 'begin') {
 
-            #warn "parseStage4: found a begin COMMAND node, ".$node->{children}->{nodes}[0]->{content}." @ $node->{start}";
+            _debug("parseStage4: found a begin COMMAND node, $node->{children}->{nodes}[0]->{content} @ $node->{start}", undef);
 
             # start a new "stack"
             if ($bcount == 0) {
                 $bidx = $i;
                 $bcount++;
                 $class = $node->{children}->{nodes}->[0]->{content}; 
-                #warn "parseStage4: opening environment tag found, class = $class";
+                _debug("parseStage4: opening environment tag found, class = $class", undef);
             }
 
             # add to the "stack"
             elsif ($node->{children}->{nodes}->[0]->{content} eq $class) {
                 $bcount++;
-                #warn "parseStage4: incrementing tag count for $class";
+                _debug("parseStage4: incrementing tag count for $class", undef);
             }
         }
 
@@ -561,14 +562,14 @@ sub _stage4 {
                $node->{children}->{nodes}->[0]->{content} eq $class) {
 
             $bcount--;
-            #warn "parseStage4: decrementing tag count for $class";
+            _debug("parseStage4: decrementing tag count for $class", undef);
 
             # we found our closing "\end" tag. replace everything with the proper
             # ENVIRONMENT tag and subtree.
             #
             if ($bcount == 0) {
 
-                #warn "parseStage4: closing environment $class";
+                _debug("parseStage4: closing environment $class", undef);
 
                 # first we must take everything between the "\begin" and "\end" 
                 # nodes and put them in a new array, removing them from the old one
@@ -670,7 +671,7 @@ sub _stage5_r {
                     $leftpos = _findsymbol($node->{content}, $left, $pos);
 
                     if ($leftpos != -1) {
-                        #print "found (left) $left in [$node->{content}]\n";
+                        _debug("found (left) $left in [$node->{content}]", undef);
                         $leftidx = $i;
                         $pos = $leftpos + 1; # next pos to search from
                     }
@@ -685,7 +686,7 @@ sub _stage5_r {
 
                         # we have to split the text node into 3 parts
                         if ($leftidx == $i) {
-                            #print "splitwithin: found (right) $right in [$node->{content}]\n";
+                            _debug("splitwithin: found (right) $right in [$node->{content}]", undef);
 
                             my ($leftnode, $textnode3) = $node->split($rightpos, $rightpos + length($right) - 1);
                             my ($textnode1, $textnode2) = $leftnode->split($leftpos, $leftpos + length($left) - 1);
@@ -712,7 +713,7 @@ sub _stage5_r {
                         # split across nodes
                         else {
 
-                            #print "splitacross: found (right) $right in [$node->{content}]\n";
+                            _debug("splitacross: found (right) $right in [$node->{content}]", undef);
 
                             # create new set of 4 smaller text nodes from the original two
                             # that contain the left and right delimeters
@@ -773,10 +774,12 @@ sub _stage5_r {
                              ($node->{type} eq 'COMMAND' && $node->{command} =~ /^verb/) ||
                              ($node->{type} eq 'ENVIRONMENT' && $node->{class} =~ /^verbatim/))) {
 
-                #print "Recurring into $node->{type} node ";
-                #print "$node->{command}" if ($node->{type} eq 'COMMAND');
-                #print "$node->{class}" if ($node->{type} eq 'ENVIRONMENT');
-                #print "\n";
+                if ($LaTeX::TOM::DEBUG) {
+                    my $message  = "Recurring into $node->{type} node ";
+                       $message .= $node->{command} if ($node->{type} eq 'COMMAND');
+                       $message .= $node->{class}   if ($node->{type} eq 'ENVIRONMENT');
+                    _debug($message, undef);
+                }
 
                 $parser->_stage5_r($node->{children}, $left, $right, $caremath);
             }
@@ -997,7 +1000,7 @@ sub _applyMapping {
              while (($wordend && $text =~ /\\\Q$command\E(\W|$)/g) ||
                             (!$wordend && $text =~ /\\\Q$command\E/g)) {
 
-                 #warn "found occurrence of mapping $command";
+                 _debug("found occurrence of mapping $command", undef);
 
                  my $idx = index $node->{content}, '\\' . $command, 0;
 
@@ -1053,9 +1056,9 @@ sub _applyMappings {
             next if (!$mapping->{name}); # skip fragged commands
 
             if ($parser->{USED_COMMANDS}->{$mapping->{name}}) {
-                #print "applying (nc) mapping $mapping->{name}\n";
+                _debug("applying (nc) mapping $mapping->{name}", undef);
             } else {
-                #print "NOT applying (nc) mapping $mapping->{name}\n";
+                _debug("NOT applying (nc) mapping $mapping->{name}", undef);
                 next;
             }
 
@@ -1063,7 +1066,7 @@ sub _applyMappings {
             #
             $parser->{MAPPEDCMDS}->{"\\$mapping->{name}"} = 1;
 
-            #print "found a mapping with name $mapping->{name}, $mapping->{nparams} params\n";
+            _debug("found a mapping with name $mapping->{name}, $mapping->{nparams} params", undef);
 
             # remove the mapping declaration
             #
@@ -1072,10 +1075,9 @@ sub _applyMappings {
             # apply the mapping
             my $count = $parser->_applyMapping($tree, $mapping, $i);
 
-            #if ($count > 0) {
-            #   print "printing altered subtree\n";
-            #   $tree->print();
-            #}
+            if ($count > 0) {
+                _debug("printing altered subtree", sub { $tree->_warn() });
+            }
 
             $i--; # since we removed the cmd node, check this index again
         }
@@ -1089,7 +1091,7 @@ sub _applyMappings {
             my $mapping = $parser->_makeEnvMapping($tree, $i);
             next if (!$mapping->{name}); # skip fragged commands.
 
-            #print "applying (ne) mapping $mapping->{name}\n";
+            _debug("applying (ne) mapping $mapping->{name}", undef);
 
             # remove the mapping declaration
             #
@@ -1106,7 +1108,7 @@ sub _applyMappings {
                  $prev->{type} eq 'TEXT' &&
                  $prev->{content} =~ /\\def\s*$/o) {
 
-             #print "found def style mapping $node->{command}\n";
+             _debug("found def style mapping $node->{command}", undef);
 
              # remove the \def
              $prev->{content} =~ s/\\def\s*$//o;
@@ -1120,9 +1122,9 @@ sub _applyMappings {
              next if (!$mapping->{name}); # skip fragged commands
 
              if ($parser->{USED_COMMANDS}->{$mapping->{name}}) {
-                 #print "applying (def) mapping $mapping->{name}\n";
+                 _debug("applying (def) mapping $mapping->{name}", undef);
              } else {
-                 #print "NOT applying (def) mapping $mapping->{name}\n";
+                 _debug("NOT applying (def) mapping $mapping->{name}", undef);
                  next;
              }
 
@@ -1130,8 +1132,7 @@ sub _applyMappings {
              #
              $parser->{MAPPEDCMDS}->{"\\$mapping->{name}"} = 1;
 
-             #print "template is \n";
-             #$mapping->{template}->print();
+             _debug("template is", sub { $mapping->{template}->_warn() });
 
              # remove the command node
              splice @{$tree->{nodes}}, $i, 1;
@@ -1169,7 +1170,7 @@ sub _addInputs {
             my $file = $node->{children}->{nodes}[0]->{content};
             next if $file =~ /pstex/; # ignore pstex images
 
-            #print "reading input file $file\n";
+            _debug("reading input file $file", undef);
 
             my $contents;
             my $filename = fileparse($file);
@@ -1256,11 +1257,11 @@ sub _parseB {
 
     $parser->_stage4($tree);
 
-    #print "done with parseStage4\n";
+    _debug("done with parseStage4", undef);
 
     $parser->_stage5($tree, 0);
 
-    #print "done with parseStage5\n";
+    _debug("done with parseStage5", undef);
 }
 
 ###############################################################################
@@ -1658,7 +1659,7 @@ sub _getTextAndCommentNodes {
 
     my $node_text = substr $text, $begins, $ends - $begins;
 
-    #warn "getTextAndCommentNodes: looking at [$node_text]";
+    _debug("getTextAndCommentNodes: looking at [$node_text]", undef);
 
     my $make_node = sub {
         my ($mode_type, $begins, $start_pos, $output) = @_;
@@ -1750,8 +1751,11 @@ sub _debug {
 
     return unless $DEBUG >= 1 && $DEBUG <= 2;
 
-    warn "$message\n" if $DEBUG >= 1 && defined $message;
-    $code->()         if $DEBUG == 2 && defined $code;
+    my ($filename, $line) = (caller)[1,2];
+    my $caller = join ':', (fileparse($filename))[0], $line;
+
+    warn "$caller: $message\n" if $DEBUG >= 1 && defined $message;
+    $code->()                  if $DEBUG == 2 && defined $code;
 }
 
 1;

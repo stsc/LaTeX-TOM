@@ -1,5 +1,11 @@
 Revision history for Perl extension LaTeX::TOM.
 
+1.02_01  2011-11-24  <schubiger@cpan.org>
+
+ - Change commented debug statements in ::Parser to be invokable.
+
+ - Alter _debug() to print filename and line number.
+
 1.02  2011-11-13  <schubiger@cpan.org>
 
  - Merged development version to stable.
