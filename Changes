@@ -1,5 +1,9 @@
 Revision history for Perl extension LaTeX::TOM.
 
+1.03  2011-12-23  <schubiger@cpan.org>
+
+ - Merged development version to stable.
+
 1.02_01  2011-11-24  <schubiger@cpan.org>
 
  - Change commented debug statements in ::Parser to be invokable.
