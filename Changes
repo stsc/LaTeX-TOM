@@ -1,5 +1,10 @@
 Revision history for Perl extension LaTeX::TOM.
 
+1.03_01  2012-02-04  <schubiger@cpan.org>
+
+ - Refactor _findbrace(), _findsymbol(), _skipBlankNodes()
+   and _validParamNode() functions.
+
 1.03  2011-12-23  <schubiger@cpan.org>
 
  - Merged development version to stable.

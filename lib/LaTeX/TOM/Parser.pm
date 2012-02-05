@@ -19,7 +19,7 @@ use constant false => 0;
 use Carp qw(carp croak);
 use File::Basename qw(fileparse);
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 my %error_handlers = (
     0 => sub { warn "parse error: $_[0].\n" },
@@ -1298,124 +1298,78 @@ sub _uindex {
     return $idx;
 }
 
-# support function: find the next occurrence of some symbol which is 
-# not escaped.
-#
-sub _findsymbol {
-    my $text = shift;
-    my $symbol = shift;
-    my $pos = shift;
+sub _find {
+    my ($text, $symbol, $pos) = @_;
 
-    my $realhit = 0; 
-    my $index = -1;
+    my ($found, $index);
 
     # get next occurrence of the symbol
     do {
-        $realhit = 1;
-        $index = index $text, $symbol, $pos; 
+        $found = true;
+        $index = index $text, $symbol, $pos;
+
+        if ($symbol eq '}' && $index - 1 >= 0 && substr($text, $index - 1, 1) eq ' ') {
+            #$pos = $index + 1;
+            $index = -1;
+        }
 
         if ($index != -1) {
             $pos = $index + 1;
 
             # make sure this occurrence isn't escaped. this is imperfect.
-            #
-            my $prevchar = ($index - 1 >= 0) ? 
-                                             (substr $text, $index - 1, 1) : '';
-            my $pprevchar = ($index - 2 >= 0) ?
-                                             (substr $text, $index - 2, 1) : '';
-            if ($prevchar eq '\\' && $pprevchar ne '\\') {
-                $realhit = 0;
-                $index = -1;
+            my $prev_char  = ($index - 1 >= 0) ? (substr $text, $index - 1, 1) : '';
+            my $pprev_char = ($index - 2 >= 0) ? (substr $text, $index - 2, 1) : '';
+
+            if ($prev_char eq '\\' && $pprev_char ne '\\') {
+                $found = false;
             }
         }
-    } while (!$realhit);
+    } until ($found);
 
     return $index;
+}
+
+# support function: find the next occurrence of some symbol which is
+# not escaped.
+#
+sub _findsymbol {
+    return _find(@_);
 }
 
 # support function: find the earliest next brace in some (flat) text
 #
 sub _findbrace {
-    my $text = shift;
-    my $pos = shift;
+    my ($text, $pos) = @_;
 
-    my $realbrace = 0;
-    my $index_o = -1;
-    my $index_c = -1;
-
-    my $pos_o = $pos;
-    my $pos_c = $pos;
-
-    # get next opening brace
-    do {
-        $realbrace = 1;
-        $index_o = index $text, '{', $pos_o;
-
-        if ($index_o != -1) {
-            $pos_o = $index_o + 1;
-
-            # make sure this brace isn't escaped. this is imperfect.
-            #
-            my $prevchar = ($index_o - 1 >= 0) ? 
-                (substr $text, $index_o - 1, 1) : '';
-            my $pprevchar = ($index_o - 2 >= 0) ?
-                (substr $text, $index_o - 2, 1) : '';
-
-            if ($prevchar eq '\\' && $pprevchar ne '\\') {
-                $realbrace = 0;
-                $index_o = -1;
-            }
-        }
-    } while (!$realbrace);
-
-    # get next closing brace
-    do {
-        $realbrace = 1;
-        $index_c = index $text, '}', $pos_c;
-
-        if (($index_c - 1) >= 0 && substr($text, $index_c - 1, 1) eq ' ') {
-            $pos_c = $index_c + 1;
-            $index_c = -1;
-        }
-
-        if ($index_c != -1) {
-            $pos_c = $index_c + 1;
-
-            # make sure this brace isn't escaped. this is imperfect.
-            #
-            my $prevchar = ($index_c - 1 >= 0) ? 
-                (substr $text, $index_c - 1, 1) : '';
-            my $pprevchar = ($index_c - 2 >= 0) ?
-                (substr $text, $index_c - 2, 1) : '';
-
-            if ($prevchar eq '\\' && $pprevchar ne '\\') {
-                $realbrace = 0;
-                $index_c = -1;
-            }
-        }
-    } while (!$realbrace);
+    my $index_o = _find($text, '{', $pos);
+    my $index_c = _find($text, '}', $pos);
 
     # handle all find cases
-    return (-1, '') if ($index_o == -1 && $index_c == -1);
-    return ($index_o, '{') if ($index_c == -1 || 
-        ($index_o != -1 && $index_o < $index_c));
-
-    return ($index_c, '}') if ($index_o == -1 || $index_c < $index_o);
+    if ($index_o == -1 && $index_c == -1) {
+        return (-1, '');
+    }
+    elsif ($index_c == -1 || ($index_o != -1 && $index_o < $index_c)) {
+        return ($index_o, '{');
+    }
+    elsif ($index_o == -1 || $index_c < $index_o) {
+        return ($index_c, '}');
+    }
 }
 
 
-# skip "blank nodes" in a tree, starting at some position. will finish 
+# skip "blank nodes" in a tree, starting at some position. will finish
 # at the first non-blank node. (ie, not a comment or whitespace TEXT node.
 #
 sub _skipBlankNodes {
-    my $tree = shift;
-    my $i = shift;
+    my ($tree, $i) = @_;
 
-    while ($tree->{nodes}[$i]->{type} eq 'COMMENT' ||
-        ($tree->{nodes}[$i]->{type} eq 'TEXT' &&
-        $tree->{nodes}[$i]->{content} =~ /^\s*$/s)) { 
+    my $node = $tree->{nodes}[$i];
 
-        $i++;
+    while ($node->{type}    eq 'COMMENT'
+       || ($node->{type}    eq 'TEXT'
+       &&  $node->{content} =~ /^\s*$/s)
+    ) {
+        $node = $tree->{nodes}[++$i];
     }
 
     return $i;
@@ -1425,12 +1379,13 @@ sub _skipBlankNodes {
 # either be a GROUP or a position = inner command.
 #
 sub _validParamNode {
-    my $node = shift;
+    my ($node) = @_;
 
-    return 1 if ($node->{type} eq 'GROUP' || 
-        ($node->{type} eq 'COMMAND' && $node->{position} eq 'inner'));
-
-    return 0;
+    if ($node->{type} eq 'GROUP'
+    || ($node->{type} eq 'COMMAND' && $node->{position} eq 'inner')) {
+        return true;
+    }
+    return false;
 }
 
 # duplicate a valid param node.	This means for a group, copy the child tree.
