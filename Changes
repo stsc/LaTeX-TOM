@@ -1,5 +1,9 @@
 Revision history for Perl extension LaTeX::TOM.
 
+1.03_02  2012-02-15  <schubiger@cpan.org>
+
+ - Refactor _makeMapping() and _makeEnvMapping().
+
 1.03_01  2012-02-04  <schubiger@cpan.org>
 
  - Refactor _findbrace(), _findsymbol(), _skipBlankNodes()

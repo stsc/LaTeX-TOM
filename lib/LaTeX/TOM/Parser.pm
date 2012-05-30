@@ -19,7 +19,7 @@ use constant false => 0;
 use Carp qw(carp croak);
 use File::Basename qw(fileparse);
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 my %error_handlers = (
     0 => sub { warn "parse error: $_[0].\n" },
@@ -1363,16 +1363,14 @@ sub _findbrace {
 sub _skipBlankNodes {
     my ($tree, $i) = @_;
 
-    my $node = $tree->{nodes}[$i];
+    my $node = $tree->{nodes}[$$i];
 
     while ($node->{type}    eq 'COMMENT'
        || ($node->{type}    eq 'TEXT'
        &&  $node->{content} =~ /^\s*$/s)
     ) {
-        $node = $tree->{nodes}[++$i];
+        $node = $tree->{nodes}[++$$i];
     }
-
-    return $i;
 }
 
 # is the passed-in node a valid parameter node? for this to be true, it must
@@ -1411,6 +1409,41 @@ sub _duplicateParam {
     return undef;
 }
 
+sub _getMapping {
+    my ($type, $tree, $i) = @_;
+
+    my $node = $tree->{nodes}[$$i];
+
+    if ($node->{type}    ne 'COMMAND'
+    || ($node->{command} ne "new$type"
+     && $node->{command} ne "renew$type")
+    ) {
+        return ();
+    }
+
+    # figure out command (first child, text node)
+    my $command = $node->{children}->{nodes}[0]->{content};
+    if ($command =~ /^\s* \\(\S+) \s*$/x) {
+        $command = $1;
+    }
+
+    $node = $tree->{nodes}[++$$i];
+
+    # figure out number of params
+    my $nparams = 0;
+    if ($node->{type} eq 'TEXT') {
+        my $text = $node->{content};
+
+        if ($text =~ /^\s* \[\s* ([0-9]+) \s*\] \s*$/x) {
+            $nparams = $1;
+        }
+
+        $$i++;
+    }
+
+    return ($command, $nparams);
+}
+
 # make a mapping from a newenvironment fragment
 #
 # newenvironments have the following syntax:
@@ -1419,64 +1452,48 @@ sub _duplicateParam {
 #
 sub _makeEnvMapping {
     my $parser = shift;
-    my $tree   = shift;
-    my $i      = shift;
+    my ($tree, $index) = @_;
 
-    return undef if ($tree->{nodes}[$i]->{type} ne 'COMMAND' ||
-        ($tree->{nodes}[$i]->{command} ne 'newenvironment' &&
-        $tree->{nodes}[$i]->{command} ne 'renewenvironment'));
+    my $i = $index;
 
-    # figure out command (first child, text node)
-    my $command = $tree->{nodes}[$i]->{children}->{nodes}[0]->{content};
-    if ($command =~ /^\s*\\(\S+)\s*$/) {
-        $command = $1;
-    }
-
-    my $next = $i+1;
-
-    # figure out number of params
-    my $nparams = 0;
-    if ($tree->{nodes}[$next]->{type} eq 'TEXT') {
-        my $text = $tree->{nodes}[$next]->{content};
-
-        if ($text =~ /^\s*\[\s*([0-9])+\s*\]\s*$/) {
-            $nparams = $1;
-        }
-
-        $next++;
-    }
+    my ($command, $nparams) = _getMapping('environment', $tree, \$i) or return undef;
 
     # default templates-- just repeat the declarations
     #
     my ($btemplate) = $parser->_basicparse("\\begin{$command}", 2, 0);
-    my ($etemplate) = $parser->_basicparse("\\end{$command}", 2, 0);
+    my ($etemplate) = $parser->_basicparse("\\end{$command}",   2, 0);
 
-    my $endpos = $next;
+    my $end_pos = $i;
 
-    # get two group subtrees... one for the begin and one for the end 
+    # get two group subtrees... one for the begin and one for the end
     # templates. we only ignore whitespace TEXT nodes and comments
     #
-    $next = _skipBlankNodes($tree, $next);
-    if (_validParamNode($tree->{nodes}[$next])) {
-        $btemplate = $parser->_duplicateParam($tree->{nodes}[$next]);
-        $next++;
+    _skipBlankNodes($tree, \$i);
+    my $node = $tree->{nodes}[$i];
 
-        $next = _skipBlankNodes($tree, $next);
+    if (_validParamNode($node)) {
+        $btemplate = $parser->_duplicateParam($node);
 
-        if (_validParamNode($tree->{nodes}[$next])) {
-            $etemplate = $parser->_duplicateParam($tree->{nodes}[$next]);
-            $endpos = $next;
+        $i++;
+        _skipBlankNodes($tree, \$i);
+        $node = $tree->{nodes}[$i];
+
+        if (_validParamNode($node)) {
+            $etemplate = $parser->_duplicateParam($node);
+            $end_pos = $i;
         }
     }
 
     # build and return the mapping hash
     #
-    return {name => $command,
-        nparams => $nparams,
-        btemplate => $btemplate,    # begin template
-        etemplate => $etemplate,    # end template
-        skip => $endpos - $i,
-        type => 'environment'};
+    return {
+        type      => 'environment',
+        name      => $command,
+        nparams   => $nparams,
+        btemplate => $btemplate,          # begin template
+        etemplate => $etemplate,          # end template
+        skip      => $end_pos - $index,
+    };
 }
 
 # make a mapping from a newcommand fragment 
@@ -1487,49 +1504,33 @@ sub _makeEnvMapping {
 # \newcommand{\name}[nparams]?{anyTeX}
 #
 sub _makeMapping {
-    my $tree = shift;
-    my $i = shift;
+    my ($tree, $index) = @_;
 
-    return undef if ($tree->{nodes}[$i]->{type} ne 'COMMAND' ||
-        ($tree->{nodes}[$i]->{command} ne 'newcommand' &&
-        $tree->{nodes}[$i]->{command} ne 'renewcommand'));
+    my $i = $index;
 
-    # figure out command (first child, text node)
-    my $command = $tree->{nodes}[$i]->{children}->{nodes}[0]->{content}; 
-    if ($command =~ /^\s*\\(\S+)\s*$/) {
-        $command = $1;
-    }
-
-    my $next = $i+1;
-
-    # figure out number of params
-    my $nparams = 0;
-    if ($tree->{nodes}[$next]->{type} eq 'TEXT') {
-        my $text = $tree->{nodes}[$next]->{content};
-
-        if ($text =~ /^\s*\[\s*([0-9])+\s*\]\s*$/) {
-            $nparams = $1;
-        }
-
-        $next++;
-    }
+    my ($command, $nparams) = _getMapping('command', $tree, \$i) or return undef;
 
     # grab subtree template (array ref)
     #
+    my $node = $tree->{nodes}[$i];
     my $template;
-    if ($tree->{nodes}[$next]->{type} eq 'GROUP') {
-        $template = $tree->{nodes}[$next]->{children}->copy();
-    } else {
+
+    if ($node->{type} eq 'GROUP') {
+        $template = $node->{children}->copy();
+    }
+    else {
         return undef;
     }
 
     # build and return the mapping hash
     #
-    return {name => $command,
-        nparams => $nparams,
+    return {
+        type     => 'command',
+        name     => $command,
+        nparams  => $nparams,
         template => $template,
-        skip => $next - $i,
-        type => 'command'};
+        skip     => $i - $index,
+    };
 }
 
 # this sub is the main entry point for the sub that actually takes a set of
