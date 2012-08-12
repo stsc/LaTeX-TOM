@@ -2,7 +2,7 @@
 #
 # LaTeX::TOM (TeX Object Model)
 #
-# Version 1.03_02
+# Version 1.03_03
 #
 # ----------------------------------------------------------------------------
 #
@@ -33,7 +33,7 @@ use strict;
 use base qw(LaTeX::TOM::Parser);
 use constant true => 1;
 
-our $VERSION = '1.03_02';
+our $VERSION = '1.03_03';
 
 our (%INNERCMDS, %MATHENVS, %MATHBRACKETS,
      %BRACELESS, %TEXTENVS, $PARSE_ERRORS_FATAL,
@@ -199,7 +199,7 @@ $DEBUG = 0;
 sub new {
     my $class = shift;
 
-    return __PACKAGE__->SUPER::new(@_);
+    return LaTeX::TOM::Parser->_new(@_);
 }
 
 1;
@@ -253,7 +253,8 @@ components).
 
 =head2 LaTeX::TOM::Parser
 
-The parser recognizes 3 parameters upon creation.  The parameters, in order, are 
+The parser recognizes 3 parameters upon creation by C<< LaTeX::TOM->new >>.
+The parameters, in order, are
 
 =over 4
 
@@ -380,7 +381,7 @@ described.
 
 =head2 LaTeX::TOM::Parser
 
-The methods for the parser (aside from the constructor, discussed above) are :
+The methods for the parser are:
 
 =head3 parseFile (filename)
 

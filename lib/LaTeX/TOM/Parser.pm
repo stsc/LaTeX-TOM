@@ -19,7 +19,7 @@ use constant false => 0;
 use Carp qw(carp croak);
 use File::Basename qw(fileparse);
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 my %error_handlers = (
     0 => sub { warn "parse error: $_[0].\n" },
@@ -29,25 +29,31 @@ my %error_handlers = (
 
 # Constructor
 #
-sub new {
+sub _new {
     my $class = shift;
 
     no strict 'refs';
 
     my $self = bless {
         config => {
-            BRACELESS          => \%{"${class}::BRACELESS"},
-            INNERCMDS          => \%{"${class}::INNERCMDS"},
-            MATHENVS           => \%{"${class}::MATHENVS"},
-            MATHBRACKETS       => \%{"${class}::MATHBRACKETS"},
-            PARSE_ERRORS_FATAL =>  ${"${class}::PARSE_ERRORS_FATAL"},
-            TEXTENVS           => \%{"${class}::TEXTENVS"},
+            BRACELESS          => \%{'LaTeX::TOM::BRACELESS'},
+            INNERCMDS          => \%{'LaTeX::TOM::INNERCMDS'},
+            MATHENVS           => \%{'LaTeX::TOM::MATHENVS'},
+            MATHBRACKETS       => \%{'LaTeX::TOM::MATHBRACKETS'},
+            PARSE_ERRORS_FATAL =>  ${'LaTeX::TOM::PARSE_ERRORS_FATAL'},
+            TEXTENVS           => \%{'LaTeX::TOM::TEXTENVS'},
         },
     };
 
     $self->_init(@_);
 
     return $self;
+}
+
+sub new {
+    # deprecated as of yyyy-mm-dd (not yet)
+    #carp 'Direct use of LaTeX::TOM::Parser constructor is deprecated and will be removed in future version';
+    shift->_new(@_);
 }
 
 # Set/reset "globals"
@@ -172,7 +178,7 @@ sub _basicparse {
     my $parse_errors_fatal = (defined $_[0] ? $_[0] : $parser->{config}{PARSE_ERRORS_FATAL});
     my $readinputs = (defined $_[1] ? $_[1] : 1);
 
-    $parser = LaTeX::TOM::Parser->new($parse_errors_fatal, $readinputs);
+    $parser = LaTeX::TOM::Parser->_new($parse_errors_fatal, $readinputs);
     my ($tree, $bracehash) = $parser->_parseA($text); 
 
     $parser->_parseB($tree);
@@ -190,7 +196,7 @@ sub _stage1 {
 
     my @nodes = _getTextAndCommentNodes($text, 0, length($text));
 
-    return LaTeX::TOM::Tree->new([@nodes]);
+    return LaTeX::TOM::Tree->_new([@nodes]);
 }
 
 # this stage parses the braces ({}) and adds the corresponding structure to
@@ -259,11 +265,11 @@ sub _stage2 {
                         my ($textnode1, $textnode2) = $leftside->split($leftpos, $leftpos);
 
                         # make the new GROUP node
-                        my $groupnode = LaTeX::TOM::Node->new(
+                        my $groupnode = LaTeX::TOM::Node->_new(
                             {type => 'GROUP',
                              start => $textnode2->{start} - 1,
                              end => $textnode2->{end} + 1,
-                             children => LaTeX::TOM::Tree->new([$textnode2]),
+                             children => LaTeX::TOM::Tree->_new([$textnode2]),
                             });
 
                         # splice the new subtree into the old location
@@ -295,11 +301,11 @@ sub _stage2 {
                         # then all the nodes up until the next text node, then the text
                         # before the right brace.
                         #
-                        my $groupnode = LaTeX::TOM::Node->new(
+                        my $groupnode = LaTeX::TOM::Node->_new(
                             {type => 'GROUP',
                              start => $textnode2->{start} - 1,
                              end => $textnode3->{end} + 1,
-                             children => LaTeX::TOM::Tree->new(
+                             children => LaTeX::TOM::Tree->_new(
                                 [$textnode2,
                                  @removed,
                                  $textnode3]),
@@ -387,7 +393,7 @@ sub _stage3 {
                 if ($parent->{type} eq 'COMMAND') {
 
                     # make a new command node
-                    my $newnode = LaTeX::TOM::Node->new(
+                    my $newnode = LaTeX::TOM::Node->_new(
                         {type => 'COMMAND',
                          command => $command,
                          start => $parent->{start},
@@ -396,7 +402,7 @@ sub _stage3 {
                          children => $parent->{children} });
 
                     # point parent to it
-                    $parent->{children} = LaTeX::TOM::Tree->new([$newnode]);
+                    $parent->{children} = LaTeX::TOM::Tree->_new([$newnode]);
 
                     # start over at this level (get additional inner commands)
                     $parent = $newnode;
@@ -474,20 +480,20 @@ sub _stage3 {
 
                     # param contents node
                     my $pstart = index $node->{content}, $param, $a;
-                    my $newchild = LaTeX::TOM::Node->new(
+                    my $newchild = LaTeX::TOM::Node->_new(
                         {type => 'TEXT',
                          start => $node->{start} + $pstart,
                          end => $node->{start} + $pstart + length($param) - 1,
                          content => $param });
 
                     # new command node
-                    my $commandnode = LaTeX::TOM::Node->new(
+                    my $commandnode = LaTeX::TOM::Node->_new(
                         {type => 'COMMAND',
                          braces => 0,
                          command => $command,
                          start => $node->{start} + $a,
                          end => $node->{start} + $b,
-                         children => LaTeX::TOM::Tree->new([$newchild]),
+                         children => LaTeX::TOM::Tree->_new([$newchild]),
                         });
 
                     $parser->{USED_COMMANDS}->{$commandnode->{command}} = 1;
@@ -578,14 +584,14 @@ sub _stage4 {
                 # make the ENVIRONMENT node
                 my $start = $tree->{nodes}[$bidx]->{end};
                 my $end = $node->{start};
-                my $envnode = LaTeX::TOM::Node->new(
+                my $envnode = LaTeX::TOM::Node->_new(
                     {type => 'ENVIRONMENT',
                      class => $class,
                      start => $start, # "inner" start and end
                      end => $end,
                      ostart => $start - length('begin') - length($class) - 2,
                      oend => $end + length('end') + length($class) + 2,
-                     children => LaTeX::TOM::Tree->new([@newarray]),
+                     children => LaTeX::TOM::Tree->_new([@newarray]),
                     });
 
                 if ($parser->{config}{MATHENVS}->{$envnode->{class}}) {
@@ -694,7 +700,7 @@ sub _stage5_r {
                             my $startpos = $spos; # get text start position 
 
                             # make the math ENVIRONMENT node
-                            my $mathnode = LaTeX::TOM::Node->new(
+                            my $mathnode = LaTeX::TOM::Node->_new(
                                 {type => 'ENVIRONMENT',
                                 class => $left,	# use left delim as class
                                 math => 1,
@@ -702,7 +708,7 @@ sub _stage5_r {
                                 ostart => $startpos + $leftpos - length($left) + 1,
                                 end => $startpos + $rightpos,
                                 oend => $startpos + $rightpos + length($right) - 1,
-                                children => LaTeX::TOM::Tree->new([$textnode2]),
+                                children => LaTeX::TOM::Tree->_new([$textnode2]),
                                 });
 
                             splice @{$tree->{nodes}}, $i, 1, $textnode1, $mathnode, $textnode3;
@@ -730,7 +736,7 @@ sub _stage5_r {
                             # then all the nodes up until the next text node, then the text
                             # before the right brace.
                             #
-                            my $mathnode = LaTeX::TOM::Node->new(
+                            my $mathnode = LaTeX::TOM::Node->_new(
                                 {type => 'ENVIRONMENT',
                                 class => $left,
                                 math => 1,
@@ -738,7 +744,7 @@ sub _stage5_r {
                                 end => $textnode3->{end} + 1,
                                 ostart => $textnode2->{start} - 1 - length($left) + 1,
                                 oend => $textnode3->{end} + 1 + length($right) - 1,
-                                children => LaTeX::TOM::Tree->new(
+                                children => LaTeX::TOM::Tree->_new(
                                 [$textnode2,
                                  @remnodes,
                                  $textnode3]),
@@ -1403,7 +1409,7 @@ sub _duplicateParam {
         $nodecopy->{children} = $subtree; # set the child pointer to new subtree
 
         # return a new tree with the new node (subtree) as its only element
-        return LaTeX::TOM::Tree->new([$nodecopy]);
+        return LaTeX::TOM::Tree->_new([$nodecopy]);
     }
 
     return undef;
@@ -1620,7 +1626,7 @@ sub _getTextAndCommentNodes {
     my $make_node = sub {
         my ($mode_type, $begins, $start_pos, $output) = @_;
 
-        return LaTeX::TOM::Node->new({
+        return LaTeX::TOM::Node->_new({
             type    => uc $mode_type,
             start   => $begins + $start_pos,
             end     => $begins + $start_pos + length($output) - 1,

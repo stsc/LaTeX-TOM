@@ -12,11 +12,11 @@ use strict;
 
 use Carp qw(croak);
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 # "constructor"
 #
-sub new {
+sub _new {
     my $class = shift;
     my $nodes = shift || []; # empty array for tree structure
 
@@ -52,7 +52,7 @@ sub copy {
     }
 
     # each subtree is a tree
-    return __PACKAGE__->new([@output]);
+    return __PACKAGE__->_new([@output]);
 }
 
 sub print {

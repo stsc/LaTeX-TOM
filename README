@@ -44,8 +44,8 @@ DESCRIPTION
 
 COMPONENTS
   LaTeX::TOM::Parser
-    The parser recognizes 3 parameters upon creation. The parameters, in
-    order, are
+    The parser recognizes 3 parameters upon creation by `LaTeX::TOM->new'.
+    The parameters, in order, are
 
     parse error handling (= 0 || 1 || 2)
         Determines what happens when a parse error is encountered. `0'
@@ -150,8 +150,7 @@ METHODS
     and described.
 
   LaTeX::TOM::Parser
-    The methods for the parser (aside from the constructor, discussed above)
-    are :
+    The methods for the parser are:
 
     parseFile (filename)
         Read in the contents of *filename* and parse them, returning a
