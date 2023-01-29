@@ -19,7 +19,7 @@ use constant false => 0;
 use Carp qw(carp croak);
 use File::Basename qw(fileparse);
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 my %error_handlers = (
     0 => sub { warn "parse error: $_[0].\n" },
@@ -179,7 +179,7 @@ sub _basicparse {
     my $readinputs = (defined $_[1] ? $_[1] : 1);
 
     $parser = LaTeX::TOM::Parser->_new($parse_errors_fatal, $readinputs);
-    my ($tree, $bracehash) = $parser->_parseA($text); 
+    my ($tree, $bracehash) = $parser->_parseA($text);
 
     $parser->_parseB($tree);
 
@@ -223,7 +223,7 @@ sub _stage2 {
     # loop through the nodes
     for (my $i = $startidx; $i < @{$tree->{nodes}}; $i++) {
         my $node = $tree->{nodes}[$i];
-        my $spos = $node->{start};	# get text start position 
+        my $spos = $node->{start};	# get text start position
 
         # set position placeholder within the text block
         my $pos = ($i == $startidx) ? $startpos : 0;
@@ -318,7 +318,7 @@ sub _stage2 {
                         splice @{$tree->{nodes}}, $leftidx, 2, $textnode1, $groupnode, $textnode4;
 
                         # add to the brace-pair lookup table
-                        $bracehash->{$groupnode->{start}} = $groupnode->{end};  
+                        $bracehash->{$groupnode->{start}} = $groupnode->{end};
                         $bracehash->{$groupnode->{end}} = $groupnode->{start};
 
                         # recur into new child nodes
@@ -431,7 +431,7 @@ sub _stage3 {
             # see if this text chunk ends in \command, since that would be the case
             # due to the previous parsing stages.
             #
-            if ($text =~ /(?:^|[^\\])(\\\w+\*?(\s*\[.*?\])?)\s*$/os && 
+            if ($text =~ /(?:^|[^\\])(\\\w+\*?(\s*\[.*?\])?)\s*$/os &&
                     defined $tree->{nodes}[$i+1] &&
                     $tree->{nodes}[$i+1]->{type} eq 'GROUP') {
 
@@ -498,7 +498,7 @@ sub _stage3 {
 
                     $parser->{USED_COMMANDS}->{$commandnode->{command}} = 1;
 
-                    # splice these all into the original array  
+                    # splice these all into the original array
                     splice @{$tree->{nodes}}, $i, 1, $leftnode, $commandnode, $rightnode;
 
                     # make the rightnode the node we're currently analyzing
@@ -519,13 +519,13 @@ sub _stage3 {
     }
 }
 
-# this stage finds \begin{x} \end{x} environments and shoves their contents 
+# this stage finds \begin{x} \end{x} environments and shoves their contents
 #	down into a new child node, with a parent node of ENVIRONMENT type.
-# 
+#
 # this has the effect of making the tree deeper, since much of the structure
 #	is in environment tags and will now be picked up.
-# 
-# for ENVIRONMENTs, "start" means the ending } on the \begin tag, 
+#
+# for ENVIRONMENTs, "start" means the ending } on the \begin tag,
 # "end" means the starting \ on the \end tag,
 # "ostart" is the starting \ on the "begin" tag,
 # "oend" is the ending } on the "end" tag, and
@@ -551,7 +551,7 @@ sub _stage4 {
             if ($bcount == 0) {
                 $bidx = $i;
                 $bcount++;
-                $class = $node->{children}->{nodes}->[0]->{content}; 
+                $class = $node->{children}->{nodes}->[0]->{content};
                 _debug("parseStage4: opening environment tag found, class = $class", undef);
             }
 
@@ -577,7 +577,7 @@ sub _stage4 {
 
                 _debug("parseStage4: closing environment $class", undef);
 
-                # first we must take everything between the "\begin" and "\end" 
+                # first we must take everything between the "\begin" and "\end"
                 # nodes and put them in a new array, removing them from the old one
                 my @newarray = splice @{$tree->{nodes}}, $bidx+1, $i - ($bidx + 1);
 
@@ -598,7 +598,7 @@ sub _stage4 {
                     $envnode->{math} = 1;
                 }
 
-                # replace the \begin and \end COMMAND nodes with the single 
+                # replace the \begin and \end COMMAND nodes with the single
                 # environment node
                 splice @{$tree->{nodes}}, $bidx, 2, $envnode;
 
@@ -608,7 +608,7 @@ sub _stage4 {
                 $i -= scalar @newarray;
 
                 # recur into the children
-                $parser->_stage4($envnode->{children});	
+                $parser->_stage4($envnode->{children});
             }
         }
 
@@ -669,7 +669,7 @@ sub _stage5_r {
             my $pos = 0; # position placeholder within the text block
             my $spos = $node->{start}; # get text start position
 
-            if ($node->{type} eq 'TEXT' && 
+            if ($node->{type} eq 'TEXT' &&
                (!$caremath || (!$node->{math} && $caremath))) {
 
                 # search for left brace if we haven't started a pair yet
@@ -697,7 +697,7 @@ sub _stage5_r {
                             my ($leftnode, $textnode3) = $node->split($rightpos, $rightpos + length($right) - 1);
                             my ($textnode1, $textnode2) = $leftnode->split($leftpos, $leftpos + length($left) - 1);
 
-                            my $startpos = $spos; # get text start position 
+                            my $startpos = $spos; # get text start position
 
                             # make the math ENVIRONMENT node
                             my $mathnode = LaTeX::TOM::Node->_new(
@@ -758,10 +758,10 @@ sub _stage5_r {
                             $i = $leftidx;
                         }
 
-                        $leftpos = -1; # reset left data    
+                        $leftpos = -1; # reset left data
                         $leftidx = -1;
                     } # right brace
-                } # left brace 
+                } # left brace
                 else {
 
                     my $rightpos = _findsymbol($node->{content}, $right, $pos);
@@ -775,7 +775,7 @@ sub _stage5_r {
 
             # recur, but not into verbatim environments!
             #
-            elsif ($node->{children} && 
+            elsif ($node->{children} &&
                          !(
                              ($node->{type} eq 'COMMAND' && $node->{command} =~ /^verb/) ||
                              ($node->{type} eq 'ENVIRONMENT' && $node->{class} =~ /^verbatim/))) {
@@ -838,10 +838,10 @@ sub _propegateModes {
                     $mathflag = 1;
                     $plaintextflag = 0;
                 }
-                elsif (($node->{type} eq 'COMMAND' && 
+                elsif (($node->{type} eq 'COMMAND' &&
                                 ($parser->{config}{TEXTENVS}->{$node->{command}} ||
                                  $parser->{config}{TEXTENVS}->{"$node->{command}*"})) ||
-                             ($node->{type} eq 'ENVIRONMENT' && 
+                             ($node->{type} eq 'ENVIRONMENT' &&
                                 ($parser->{config}{TEXTENVS}->{$node->{class}} ||
                                  $parser->{config}{TEXTENVS}{"$node->{command}*"}))
                             ) {
@@ -1002,7 +1002,7 @@ sub _applyMapping {
 
              # find occurrences of the mapping command
              #
-             my $wordend = ($command =~ /\w$/ ? 1 : 0); 
+             my $wordend = ($command =~ /\w$/ ? 1 : 0);
              while (($wordend && $text =~ /\\\Q$command\E(\W|$)/g) ||
                             (!$wordend && $text =~ /\\\Q$command\E/g)) {
 
@@ -1058,7 +1058,7 @@ sub _applyMappings {
         if ($node->{type} eq 'COMMAND' &&
                 $node->{command} =~ /^(re)?newcommand$/) {
 
-            my $mapping = _makeMapping($tree, $i); 
+            my $mapping = _makeMapping($tree, $i);
             next if (!$mapping->{name}); # skip fragged commands
 
             if ($parser->{USED_COMMANDS}->{$mapping->{name}}) {
@@ -1289,7 +1289,7 @@ sub _uindex {
     # get next opening brace
     do {
         $realbrace = 1;
-        $idx = index $text, $char, $pos; 
+        $idx = index $text, $char, $pos;
 
         if ($idx != -1) {
             $pos = $idx + 1;
@@ -1502,7 +1502,7 @@ sub _makeEnvMapping {
     };
 }
 
-# make a mapping from a newcommand fragment 
+# make a mapping from a newcommand fragment
 # takes tree pointer and index of command node
 #
 # newcommands have the following syntax:
@@ -1612,8 +1612,8 @@ sub _applyParamsToTemplate_r {
 }
 
 
-# This sub takes a chunk of the document text between two points and makes 
-# it into a list of TEXT nodes and COMMENT nodes, as we would expect from 
+# This sub takes a chunk of the document text between two points and makes
+# it into a list of TEXT nodes and COMMENT nodes, as we would expect from
 # '%' prefixed LaTeX comment lines
 #
 sub _getTextAndCommentNodes {
@@ -1696,7 +1696,7 @@ sub _readFile {
     my $opened = open(my $fh, '<', $file);
 
     unless ($opened) {
-        croak "Cannot open $file: $!" if $raise_error;
+        croak "Cannot open `$file': $!" if $raise_error;
         return undef;
     }
 

@@ -4,37 +4,37 @@
       "Steven Schubiger <schubiger@cpan.org>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.38, CPAN::Meta::Converter version 2.112150",
+   "generated_by" : "Module::Build version 0.4231",
    "license" : [
       "perl_5"
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
-      "version" : "2"
+      "version" : 2
    },
    "name" : "LaTeX-TOM",
    "prereqs" : {
-      "build" : {
-         "requires" : {
-            "Test::More" : 0
-         }
-      },
       "configure" : {
          "requires" : {
-            "Module::Build" : "0.38"
+            "Module::Build" : "0.42"
          }
       },
       "runtime" : {
          "requires" : {
-            "Carp" : 0,
-            "File::Basename" : 0
+            "Carp" : "0",
+            "File::Basename" : "0"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Test::More" : "0"
          }
       }
    },
    "provides" : {
       "LaTeX::TOM" : {
          "file" : "lib/LaTeX/TOM.pm",
-         "version" : "1.03_03"
+         "version" : "1.03_04"
       },
       "LaTeX::TOM::Node" : {
          "file" : "lib/LaTeX/TOM/Node.pm",
@@ -42,18 +42,22 @@
       },
       "LaTeX::TOM::Parser" : {
          "file" : "lib/LaTeX/TOM/Parser.pm",
-         "version" : "0.10"
+         "version" : "0.11"
       },
       "LaTeX::TOM::Tree" : {
          "file" : "lib/LaTeX/TOM/Tree.pm",
-         "version" : "0.05"
+         "version" : "0.06"
       }
    },
    "release_status" : "testing",
    "resources" : {
       "license" : [
          "http://dev.perl.org/licenses/"
-      ]
+      ],
+      "repository" : {
+         "url" : "https://github.com/stsc/LaTeX-TOM"
+      }
    },
-   "version" : "1.03_03"
+   "version" : "1.03_04",
+   "x_serialization_backend" : "JSON::PP version 4.04"
 }

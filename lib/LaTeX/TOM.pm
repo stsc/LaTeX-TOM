@@ -2,7 +2,7 @@
 #
 # LaTeX::TOM (TeX Object Model)
 #
-# Version 1.03_03
+# Version 1.03_04
 #
 # ----------------------------------------------------------------------------
 #
@@ -33,7 +33,7 @@ use strict;
 use base qw(LaTeX::TOM::Parser);
 use constant true => 1;
 
-our $VERSION = '1.03_03';
+our $VERSION = '1.03_04';
 
 our (%INNERCMDS, %MATHENVS, %MATHBRACKETS,
      %BRACELESS, %TEXTENVS, $PARSE_ERRORS_FATAL,
@@ -42,7 +42,7 @@ our (%INNERCMDS, %MATHENVS, %MATHBRACKETS,
 # BEGIN CONFIG SECTION ########################################################
 
 # these are commands that can be "embedded" within a grouping to alter the
-# environment of that grouping. For instance {\bf text}.  Without listing the 
+# environment of that grouping. For instance {\bf text}.  Without listing the
 # command names here, the parser will treat such sequences as plain text.
 #
 %INNERCMDS = map { $_ => true } (
@@ -168,7 +168,7 @@ our (%INNERCMDS, %MATHENVS, %MATHBRACKETS,
 # '\(' => '\)',
  );
 
-# these commands require no braces, and their parameters are simply the 
+# these commands require no braces, and their parameters are simply the
 # "word" following the command declaration
 #
 %BRACELESS = map { $_ => true } (
@@ -277,9 +277,9 @@ included.
 =item apply mappings flag (= 0 || B<1>)
 
 This flag determines whether (most) user-defined mappings are applied.  This
-means C<\defs>, C<\newcommands>, and C<\newenvironments>.  This is critical for 
-properly analyzing the content of the document, as this must be phrased in terms 
-of the semantics of the original TeX and LaTeX commands, not ad hoc user macros.  
+means C<\defs>, C<\newcommands>, and C<\newenvironments>.  This is critical for
+properly analyzing the content of the document, as this must be phrased in terms
+of the semantics of the original TeX and LaTeX commands, not ad hoc user macros.
 So, for instance, do not expect plain-text extraction to work properly with this
 option off.
 
@@ -321,7 +321,7 @@ the environment.  For example,
    r = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
  \end{equation}
 
-Would parse into an C<ENVIRONMENT> node of the class ``equation'' with a child 
+Would parse into an C<ENVIRONMENT> node of the class ``equation'' with a child
 tree containing the result of parsing C<``r = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}.''>
 
 =item GROUP
@@ -339,15 +339,15 @@ C<COMMAND>.  However, this is something that this module really should do
 eventually.  Currently if you want all the parameters to a multi-parametered
 command, you'll need to pick out all the following C<GROUP> nodes yourself.
 
-Eventually this will become something like a list which is stored in the 
+Eventually this will become something like a list which is stored in the
 C<COMMAND> node, much like L<XML::DOM>'s treatment of attributes.  These are, in a
 sense, apart from the rest of the document tree.  Then C<GROUP> nodes will become
 much more rare.
 
 =item COMMENT
 
-A C<COMMENT> node is very similar to a C<TEXT> node, except it is specifically for 
-lines beginning with C<``%''> (the TeX comment delimeter) or the right-hand 
+A C<COMMENT> node is very similar to a C<TEXT> node, except it is specifically for
+lines beginning with C<``%''> (the TeX comment delimeter) or the right-hand
 portion of a line that has C<``%''> at some internal point.
 
 =back
@@ -539,7 +539,7 @@ This section contains the methods for nodes of the parsed Trees.
 
 =item C<>
 
-Returns the type, one of C<TEXT>, C<COMMAND>, C<ENVIRONMENT>, C<GROUP>, or C<COMMENT>, 
+Returns the type, one of C<TEXT>, C<COMMAND>, C<ENVIRONMENT>, C<GROUP>, or C<COMMENT>,
 as described above.
 
 =back
@@ -550,7 +550,7 @@ as described above.
 
 =item C<>
 
-Applicable for C<TEXT> or C<COMMENT> nodes; this returns the document text they contain.  
+Applicable for C<TEXT> or C<COMMENT> nodes; this returns the document text they contain.
 This is undef for other node types.
 
 =back
@@ -584,7 +584,7 @@ the opening identifier.
 
 =item C<>
 
-Same as above, but for last character.  For C<GROUP>, C<ENVIRONMENT>, or C<COMMAND> 
+Same as above, but for last character.  For C<GROUP>, C<ENVIRONMENT>, or C<COMMAND>
 nodes, this will be the I<first> character of the closing identifier.
 
 =back
@@ -631,7 +631,7 @@ can be assumed to be the actual mathematics contained in the document.
 
 This applies only to C<TEXT> nodes.  It is C<1> if the node is non-math B<and> is
 visible (in other words, will end up being a part of the output document). One
-would only want to index C<TEXT> nodes with this property, for information 
+would only want to index C<TEXT> nodes with this property, for information
 retrieval purposes.
 
 =back

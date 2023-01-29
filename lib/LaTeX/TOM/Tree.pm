@@ -12,7 +12,7 @@ use strict;
 
 use Carp qw(croak);
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 # "constructor"
 #
@@ -232,7 +232,7 @@ sub toLaTeX {
     return $str;
 }
 
-# Augment the nodes in the tree with pointers to all neighboring nodes, so 
+# Augment the nodes in the tree with pointers to all neighboring nodes, so
 # traversal is easier for the user who is given a lone node.	This is a hack,
 # we should really be maintaining this all along.
 #
