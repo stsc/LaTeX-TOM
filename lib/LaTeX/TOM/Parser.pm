@@ -19,7 +19,7 @@ use constant false => 0;
 use Carp qw(carp croak);
 use File::Basename qw(fileparse);
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 my %error_handlers = (
     0 => sub { warn "parse error: $_[0].\n" },
@@ -51,8 +51,8 @@ sub _new {
 }
 
 sub new {
-    # deprecated as of yyyy-mm-dd (not yet)
-    #carp 'Direct use of LaTeX::TOM::Parser constructor is deprecated and will be removed in future version';
+    # XXX deprecated as of 2023-01-30
+    carp 'Direct use of LaTeX::TOM::Parser constructor is deprecated and will be removed in future version';
     shift->_new(@_);
 }
 
@@ -626,7 +626,7 @@ sub _stage4 {
     }
 }
 
-# This is the "math" stage: here we grab simple-delimeter math modes from
+# This is the "math" stage: here we grab simple-delimiter math modes from
 # the text they are embedded in, and turn those into new groupings, with the
 # "math" flag set.
 #
@@ -722,13 +722,13 @@ sub _stage5_r {
                             _debug("splitacross: found (right) $right in [$node->{content}]", undef);
 
                             # create new set of 4 smaller text nodes from the original two
-                            # that contain the left and right delimeters
+                            # that contain the left and right delimiters
                             #
                             my ($textnode1, $textnode2) = $tree->{nodes}[$leftidx]->split($leftpos, $leftpos + length($left) - 1);
                             my ($textnode3, $textnode4) = $tree->{nodes}[$i]->split($rightpos, $rightpos + length($right) - 1);
 
                             # nodes to remove "from the middle" (between the left and right
-                            # text nodes which contain the delimeters)
+                            # text nodes which contain the delimiters)
                             #
                             my @remnodes = splice @{$tree->{nodes}}, $leftidx+1, $i - $leftidx - 1;
 
@@ -1023,7 +1023,7 @@ sub _applyMapping {
                  $i += scalar @{$applied->{nodes}} + 1;
 
                  # get the next node
-                 $node = $tree->{$node}[$i];
+                 $node = $tree->{nodes}[$i];
 
                  # count application
                  $applications++;

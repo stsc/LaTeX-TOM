@@ -2,7 +2,7 @@
 #
 # LaTeX::TOM (TeX Object Model)
 #
-# Version 1.03_04
+# Version 1.03_05
 #
 # ----------------------------------------------------------------------------
 #
@@ -33,7 +33,7 @@ use strict;
 use base qw(LaTeX::TOM::Parser);
 use constant true => 1;
 
-our $VERSION = '1.03_04';
+our $VERSION = '1.03_05';
 
 our (%INNERCMDS, %MATHENVS, %MATHBRACKETS,
      %BRACELESS, %TEXTENVS, $PARSE_ERRORS_FATAL,
@@ -347,7 +347,7 @@ much more rare.
 =item COMMENT
 
 A C<COMMENT> node is very similar to a C<TEXT> node, except it is specifically for
-lines beginning with C<``%''> (the TeX comment delimeter) or the right-hand
+lines beginning with C<``%''> (the TeX comment delimiter) or the right-hand
 portion of a line that has C<``%''> at some internal point.
 
 =back
@@ -772,6 +772,9 @@ Thanks to (in order of appearance) who have contributed valuable suggestions and
  Moritz Lenz
  James Bowlin
  Jesse S. Bangs
+ Cord Merrell
+ Debian Perl Group
+ Eli Billauer
 
 =head1 AUTHORS
 

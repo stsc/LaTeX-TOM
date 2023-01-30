@@ -1,5 +1,20 @@
 Revision history for Perl extension LaTeX::TOM.
 
+1.03_05  2023-01-30  <schubiger@cpan.org>
+
+ - Deprecate LaTeX::TOM::Parser::new().
+
+ - Tree.pm: Make toLaTeX() print out command options too.
+   [Eli Billauer]
+
+ - _applyMapping(): Fix typo in Code.
+   [github #2 - Cord Merrell]
+
+ - Correct spelling of "delimeter(s)".
+   [github #3 - Debian Perl Group]
+
+ - Minor tweaks.
+
 1.03_04  2023-01-29  <schubiger@cpan.org>
 
  - Move testing module to test_requires.

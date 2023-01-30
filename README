@@ -129,7 +129,7 @@ COMPONENTS
     COMMENT
         A "COMMENT" node is very similar to a "TEXT" node, except it is
         specifically for lines beginning with ``%'' (the TeX comment
-        delimeter) or the right-hand portion of a line that has ``%'' at
+        delimiter) or the right-hand portion of a line that has ``%'' at
         some internal point.
 
   LaTeX::TOM::Trees
@@ -334,6 +334,9 @@ CREDITS
      Moritz Lenz
      James Bowlin
      Jesse S. Bangs
+     Cord Merrell
+     Debian Perl Group
+     Eli Billauer
 
 AUTHORS
     Written by Aaron Krowne <akrowne@vt.edu>
