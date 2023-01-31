@@ -1,5 +1,9 @@
 Revision history for Perl extension LaTeX::TOM.
 
+1.04  2023-01-31  <schubiger@cpan.org>
+
+ - Merged development version to stable.
+
 1.03_05  2023-01-30  <schubiger@cpan.org>
 
  - Deprecate LaTeX::TOM::Parser::new().
